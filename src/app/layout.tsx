@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 
+import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/lib/site";
 
 import "./globals.css";
@@ -53,6 +54,11 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} min-h-screen antialiased`}
       >
         {children}
+
+        <Toaster
+          position="top-right"
+          closeButton
+        />
       </body>
     </html>
   );
