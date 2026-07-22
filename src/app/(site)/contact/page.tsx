@@ -9,6 +9,7 @@ import {
 
 import { ContactForm } from "@/components/forms/contact-form";
 import { PageHero } from "@/components/shared/page-hero";
+import { getMarketplaceListingBySlug } from "@/data/marketplace";
 import { getVehicleBySlug } from "@/data/vehicles";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
 type ContactPageProps = {
   searchParams: Promise<{
     vehicle?: string | string[];
+    listing?: string | string[];
   }>;
 };
 
@@ -61,21 +63,47 @@ export default async function ContactPage({
     ? resolvedSearchParams.vehicle[0]
     : resolvedSearchParams.vehicle;
 
+  const listingSlug = Array.isArray(
+    resolvedSearchParams.listing,
+  )
+    ? resolvedSearchParams.listing[0]
+    : resolvedSearchParams.listing;
+
   const vehicle = vehicleSlug
     ? getVehicleBySlug(vehicleSlug)
+    : undefined;
+
+  const listing = listingSlug
+    ? getMarketplaceListingBySlug(listingSlug)
     : undefined;
 
   const vehicleName = vehicle
     ? `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim}`
     : undefined;
 
+  const listingName = listing
+    ? `${listing.year} ${listing.make} ${listing.model} ${listing.trim}`
+    : undefined;
+
+  const enquiryTarget = vehicleName ?? listingName;
+
   const defaultSubject = vehicleName
     ? `Enquiry about ${vehicleName}`
-    : "";
+    : listingName
+      ? `Marketplace enquiry about ${listingName}`
+      : "";
 
   const defaultMessage = vehicleName
     ? `Hello Tavin Motors, I would like more information about the ${vehicleName}, stock code ${vehicle?.stockCode}.`
-    : "";
+    : listingName
+      ? `Hello Tavin Motors, I would like more information about the local marketplace listing for the ${listingName}, listing code ${listing?.stockCode}.`
+      : "";
+
+  const defaultEnquiryType = vehicleName
+    ? "vehicle"
+    : listingName
+      ? "marketplace"
+      : "";
 
   return (
     <>
@@ -84,10 +112,10 @@ export default async function ContactPage({
         title="Let’s discuss your next vehicle."
         description="Contact us about available inventory, incoming vehicles, personalised imports, local marketplace listings or auto-care services."
       >
-        {vehicleName && (
+        {enquiryTarget && (
           <div className="inline-flex items-center gap-2 border border-brand-gold/25 bg-brand-gold/[0.045] px-4 py-2 text-xs text-muted-foreground">
             <MessageCircle className="size-4 text-brand-gold" />
-            Enquiring about: {vehicleName}
+            Enquiring about: {enquiryTarget}
           </div>
         )}
       </PageHero>
@@ -134,10 +162,10 @@ export default async function ContactPage({
               </h2>
 
               <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                The contact form supports general questions and
-                vehicle-specific enquiries. When opened from a vehicle
-                page, the relevant vehicle information is entered
-                automatically.
+                The contact form supports general questions, dealership
+                vehicle enquiries and local marketplace enquiries. When
+                opened from a vehicle or marketplace listing page, the
+                relevant information is entered automatically.
               </p>
 
               <div className="mt-8 border border-brand-gold/20 bg-brand-gold/[0.035] p-5">
@@ -157,9 +185,7 @@ export default async function ContactPage({
             <ContactForm
               defaultSubject={defaultSubject}
               defaultMessage={defaultMessage}
-              defaultEnquiryType={
-                vehicleName ? "vehicle" : ""
-              }
+              defaultEnquiryType={defaultEnquiryType}
             />
           </div>
         </div>
