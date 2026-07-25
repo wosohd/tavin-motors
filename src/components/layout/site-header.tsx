@@ -4,8 +4,8 @@ import { Phone, UserRound } from "lucide-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   return (
@@ -39,13 +39,14 @@ export function SiteHeader() {
               "hidden text-muted-foreground xl:inline-flex",
             )}
           >
-            <Phone className="size-4" />
+            <Phone aria-hidden="true" className="size-4" />
             Contact
           </Link>
 
           <Link
-            href="/account"
-            aria-label="Customer account"
+            href="/dashboard"
+            aria-label="Open customer dashboard"
+            title="Customer dashboard"
             className={cn(
               buttonVariants({
                 variant: "outline",
@@ -54,7 +55,7 @@ export function SiteHeader() {
               "hidden border-white/10 bg-white/5 sm:inline-flex",
             )}
           >
-            <UserRound className="size-4" />
+            <UserRound aria-hidden="true" className="size-4" />
           </Link>
 
           <Link

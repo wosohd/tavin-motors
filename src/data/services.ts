@@ -111,6 +111,10 @@ export const autoServices: AutoService[] = [
   },
 ];
 
+export function getServiceById(id: string) {
+  return autoServices.find((service) => service.id === id);
+}
+
 export function getServiceBySlug(slug: string) {
   return autoServices.find((service) => service.slug === slug);
 }

@@ -320,6 +320,10 @@ export function getVehiclesByStatus(status: VehicleStatus) {
   return vehicles.filter((vehicle) => vehicle.status === status);
 }
 
+export function getVehicleById(id: string) {
+  return vehicles.find((vehicle) => vehicle.id === id);
+}
+
 export function getVehicleBySlug(slug: string) {
   return vehicles.find((vehicle) => vehicle.slug === slug);
 }
