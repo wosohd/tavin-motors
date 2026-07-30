@@ -163,7 +163,7 @@ export const marketplaceListings = [
   },
 ] satisfies MarketplaceListingRecord[];
 
-export const importRequests = [
+export const importRequests: ImportRequestRecord[] = [
   {
     id: "import-001",
     customerName: currentCustomer.name,
@@ -212,9 +212,9 @@ export const importRequests = [
     nextStep: "Receive the sourcing deposit",
     assignedTo: "Kevin Maina",
   },
-] satisfies ImportRequestRecord[];
+];
 
-export const serviceBookings = [
+export const serviceBookings: ServiceBookingRecord[] = [
   {
     id: "booking-001",
     customerName: currentCustomer.name,
@@ -251,9 +251,9 @@ export const serviceBookings = [
     scheduledFor: "2026-07-28T14:00:00+03:00",
     status: "REQUESTED",
   },
-] satisfies ServiceBookingRecord[];
+];
 
-export const enquiries = [
+export const enquiries: EnquiryRecord[] = [
   {
     id: "enquiry-001",
     customerName: currentCustomer.name,
@@ -286,7 +286,7 @@ export const enquiries = [
     channel: "EMAIL",
     status: "REPLIED",
   },
-] satisfies EnquiryRecord[];
+];
 
 export const incomingVehicleRecords = [
   {
