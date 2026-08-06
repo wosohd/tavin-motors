@@ -41,7 +41,7 @@ export const marketplaceListings: MarketplaceListing[] = [
     ],
     seller: {
       id: "seller-001",
-      displayName: "Daniel K.",
+      displayName: "Joseph O.",
       sellerType: "Private Seller",
       verified: true,
       memberSince: "July 2026",

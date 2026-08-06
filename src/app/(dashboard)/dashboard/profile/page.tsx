@@ -22,7 +22,7 @@ import {
 import { currentCustomer } from "@/data/dashboard";
 
 const demonstrationProfile = {
-  email: "daniel.mwangi@example.com",
+  email: "joseph.otachi@example.com",
   phone: "+254 712 345 678",
   county: "Nairobi",
   preferredContact: "WhatsApp",

@@ -12,9 +12,9 @@ import type {
 
 export const currentCustomer = {
   id: "customer-001",
-  name: "Daniel Mwangi",
-  firstName: "Daniel",
-  email: "daniel.mwangi@example.com",
+  name: "Joseph Otachi",
+  firstName: "Joseph",
+  email: "joseph.otachi@example.com",
   phone: "+254 712 345 678",
   location: "Nairobi, Kenya",
   joinedAt: "2026-04-18",
@@ -174,7 +174,7 @@ export const importRequests: ImportRequestRecord[] = [
     status: "SHIPPING",
     progress: 64,
     nextStep: "Vessel arrival and port-clearance preparation",
-    assignedTo: "Amina Kamau",
+    assignedTo: "Sir Clevin",
   },
   {
     id: "import-002",
@@ -198,7 +198,7 @@ export const importRequests: ImportRequestRecord[] = [
     status: "SOURCING",
     progress: 12,
     nextStep: "Confirm preferred exterior and interior colours",
-    assignedTo: "Amina Kamau",
+    assignedTo: "Sir Clevin",
   },
   {
     id: "import-004",
@@ -334,7 +334,7 @@ export const dashboardUsers = [
   },
   {
     id: "user-004",
-    name: "Amina Kamau",
+    name: "Sir Clevin",
     email: "amina@tavinmotors.example",
     role: "ADMINISTRATOR",
     status: "ACTIVE",

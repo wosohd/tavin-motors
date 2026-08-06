@@ -130,22 +130,22 @@ export const dashboardRoleDetails: Record<
 > = {
   customer: {
     label: "Customer portal",
-    accountName: "Daniel Mwangi",
-    accountDetail: "Customer demo account",
+    accountName: "Joseph Otachi",
+    accountDetail: "Customer account",
     accountIcon: CircleUserRound,
     navigation: customerDashboardNavigation,
     switchHref: "/admin",
-    switchLabel: "Open admin demo",
+    switchLabel: "Admin dashboard",
     switchIcon: ClipboardCheck,
   },
   admin: {
     label: "Administration",
-    accountName: "Amina Kamau",
-    accountDetail: "Administrator demo account",
+    accountName: "Sir Clevin",
+    accountDetail: "Administrator account",
     accountIcon: ShieldCheck,
     navigation: adminDashboardNavigation,
     switchHref: "/dashboard",
-    switchLabel: "Open customer demo",
+    switchLabel: "Customer dashboard",
     switchIcon: CircleUserRound,
   },
 };
