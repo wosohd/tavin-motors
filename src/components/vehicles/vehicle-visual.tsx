@@ -32,7 +32,7 @@ export function VehicleVisual({
   return (
     <div
       className={cn(
-        "group/visual relative isolate overflow-hidden bg-gradient-to-br",
+        "group/visual relative isolate min-h-56 overflow-hidden bg-gradient-to-br",
         toneStyles[vehicle.tone],
         className,
       )}
@@ -41,24 +41,41 @@ export function VehicleVisual({
 
       <div className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-black/70 to-transparent" />
 
-      <div className="absolute top-[10%] left-[55%] size-48 -translate-x-1/2 rounded-full border border-current/10 sm:size-60" />
-
-      <div className="absolute top-[18%] left-[55%] size-36 -translate-x-1/2 rounded-full border border-white/5 sm:size-44" />
-
-      <div className="absolute top-4 left-4 z-10 border border-white/10 bg-black/30 px-3 py-1 text-[0.62rem] tracking-[0.18em] text-white/70 uppercase backdrop-blur-md">
+      <div className="absolute top-4 left-4 z-20 border border-white/10 bg-black/30 px-3 py-1 text-[0.62rem] tracking-[0.18em] text-white/70 uppercase backdrop-blur-md">
         {vehicle.stockCode}
       </div>
 
-      <div className="absolute top-4 right-4 z-10 text-[0.62rem] tracking-[0.18em] text-white/50 uppercase">
+      <div className="absolute top-4 right-4 z-20 text-[0.62rem] tracking-[0.18em] text-white/50 uppercase">
         Tavin Selection
       </div>
 
-      <div className="flex h-full min-h-56 items-center justify-center px-8 pt-10">
+      <div className="absolute inset-0 flex items-center justify-center px-8 pt-10">
+        <div
+          className={cn(
+            "pointer-events-none absolute aspect-square rounded-full border border-current/10",
+            compact
+              ? "w-[55%] max-w-48"
+              : "w-[58%] max-w-60",
+          )}
+        />
+
+        <div
+          className={cn(
+            "pointer-events-none absolute aspect-square rounded-full border border-white/5",
+            compact
+              ? "w-[41%] max-w-36"
+              : "w-[43%] max-w-44",
+          )}
+        />
+
         <CarFront
+          aria-hidden="true"
           strokeWidth={0.8}
           className={cn(
-            "drop-shadow-[0_28px_30px_rgb(0_0_0_/_70%)] transition-transform duration-500 group-hover/visual:scale-[1.04]",
-            compact ? "size-36" : "size-44 sm:size-52",
+            "relative z-10 h-auto max-h-[58%] drop-shadow-[0_28px_30px_rgb(0_0_0_/_70%)] transition-transform duration-500 group-hover/visual:scale-[1.04]",
+            compact
+              ? "w-[38%] max-w-36"
+              : "w-[42%] max-w-52",
           )}
         />
       </div>
