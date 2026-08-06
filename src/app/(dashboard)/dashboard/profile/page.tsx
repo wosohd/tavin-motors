@@ -29,15 +29,26 @@ const demonstrationProfile = {
   joinedAt: "July 2026",
 };
 
+const fieldClassName =
+  "h-11 w-full rounded-lg border border-input bg-background/80 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10";
+
 export default function CustomerProfilePage() {
-  const customerNames = currentCustomer.name.trim().split(/\s+/);
+  const customerNames = currentCustomer.name
+    .trim()
+    .split(/\s+/);
+
   const firstName =
     customerNames[0] ?? currentCustomer.firstName;
-  const lastName = customerNames.slice(1).join(" ");
+
+  const lastName = customerNames
+    .slice(1)
+    .join(" ");
 
   const initials = customerNames
     .slice(0, 2)
-    .map((name) => name.charAt(0).toUpperCase())
+    .map((name) =>
+      name.charAt(0).toUpperCase(),
+    )
     .join("");
 
   return (
@@ -50,15 +61,15 @@ export default function CustomerProfilePage() {
 
       <DashboardDemoNotice />
 
-      <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+      <Card className="border border-border bg-card/80 shadow-sm">
         <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="flex items-center gap-4">
-            <span className="grid size-16 shrink-0 place-items-center rounded-full border border-brand-gold/20 bg-brand-burgundy/30 text-xl font-semibold text-brand-gold">
+            <span className="grid size-16 shrink-0 place-items-center rounded-full border border-brand-gold/25 bg-brand-burgundy/10 text-xl font-semibold text-brand-gold dark:bg-brand-burgundy/30">
               {initials || "TM"}
             </span>
 
             <div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-foreground">
                 {currentCustomer.name}
               </h2>
 
@@ -67,13 +78,14 @@ export default function CustomerProfilePage() {
               </p>
 
               <p className="mt-1 text-xs text-muted-foreground">
-                Member since {demonstrationProfile.joinedAt}
+                Member since{" "}
+                {demonstrationProfile.joinedAt}
               </p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 px-4 py-3">
-            <p className="flex items-center gap-2 text-sm font-medium text-emerald-300">
+          <div className="rounded-xl border border-emerald-600/20 bg-emerald-500/10 px-4 py-3 dark:border-emerald-400/20">
+            <p className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
               <ShieldCheck
                 aria-hidden="true"
                 className="size-4"
@@ -85,20 +97,22 @@ export default function CustomerProfilePage() {
       </Card>
 
       <section className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-xl text-white">
-              <span className="grid size-10 place-items-center rounded-xl bg-brand-burgundy/30 text-brand-gold">
+            <CardTitle className="flex items-center gap-3 text-xl text-foreground">
+              <span className="grid size-10 place-items-center rounded-xl border border-brand-gold/20 bg-brand-burgundy/10 text-brand-gold dark:bg-brand-burgundy/30">
                 <UserRound
                   aria-hidden="true"
                   className="size-5"
                 />
               </span>
+
               Personal information
             </CardTitle>
 
             <CardDescription>
-              Update the information associated with your customer account.
+              Update the information associated with your
+              customer account.
             </CardDescription>
           </CardHeader>
 
@@ -108,7 +122,7 @@ export default function CustomerProfilePage() {
                 <div className="space-y-2">
                   <label
                     htmlFor="first-name"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-foreground"
                   >
                     First name
                   </label>
@@ -119,14 +133,14 @@ export default function CustomerProfilePage() {
                     type="text"
                     defaultValue={firstName}
                     autoComplete="given-name"
-                    className="h-11 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10"
+                    className={fieldClassName}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <label
                     htmlFor="last-name"
-                    className="text-sm font-medium text-white"
+                    className="text-sm font-medium text-foreground"
                   >
                     Last name
                   </label>
@@ -137,7 +151,7 @@ export default function CustomerProfilePage() {
                     type="text"
                     defaultValue={lastName}
                     autoComplete="family-name"
-                    className="h-11 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10"
+                    className={fieldClassName}
                   />
                 </div>
               </div>
@@ -145,7 +159,7 @@ export default function CustomerProfilePage() {
               <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="flex items-center gap-2 text-sm font-medium text-white"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground"
                 >
                   <Mail
                     aria-hidden="true"
@@ -158,16 +172,18 @@ export default function CustomerProfilePage() {
                   id="email"
                   name="email"
                   type="email"
-                  defaultValue={demonstrationProfile.email}
+                  defaultValue={
+                    demonstrationProfile.email
+                  }
                   autoComplete="email"
-                  className="h-11 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10"
+                  className={fieldClassName}
                 />
               </div>
 
               <div className="space-y-2">
                 <label
                   htmlFor="phone"
-                  className="flex items-center gap-2 text-sm font-medium text-white"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground"
                 >
                   <Phone
                     aria-hidden="true"
@@ -180,16 +196,18 @@ export default function CustomerProfilePage() {
                   id="phone"
                   name="phone"
                   type="tel"
-                  defaultValue={demonstrationProfile.phone}
+                  defaultValue={
+                    demonstrationProfile.phone
+                  }
                   autoComplete="tel"
-                  className="h-11 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10"
+                  className={fieldClassName}
                 />
               </div>
 
               <div className="space-y-2">
                 <label
                   htmlFor="county"
-                  className="flex items-center gap-2 text-sm font-medium text-white"
+                  className="flex items-center gap-2 text-sm font-medium text-foreground"
                 >
                   <MapPin
                     aria-hidden="true"
@@ -202,14 +220,19 @@ export default function CustomerProfilePage() {
                   id="county"
                   name="county"
                   type="text"
-                  defaultValue={demonstrationProfile.county}
+                  defaultValue={
+                    demonstrationProfile.county
+                  }
                   autoComplete="address-level1"
-                  className="h-11 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10"
+                  className={fieldClassName}
                 />
               </div>
 
-              <div className="flex justify-end border-t border-white/10 pt-5">
-                <DemoActionButton type="button" size="lg">
+              <div className="flex justify-end border-t border-border pt-5">
+                <DemoActionButton
+                  type="button"
+                  size="lg"
+                >
                   <Save aria-hidden="true" />
                   Save profile changes
                 </DemoActionButton>
@@ -219,9 +242,9 @@ export default function CustomerProfilePage() {
         </Card>
 
         <div className="space-y-6">
-          <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+          <Card className="border border-border bg-card/80 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-lg text-white">
+              <CardTitle className="flex items-center gap-3 text-lg text-foreground">
                 <BellRing
                   aria-hidden="true"
                   className="size-5 text-brand-gold"
@@ -230,7 +253,8 @@ export default function CustomerProfilePage() {
               </CardTitle>
 
               <CardDescription>
-                Choose how the Tavin Motors team should contact you.
+                Choose how the Tavin Motors team should
+                contact you.
               </CardDescription>
             </CardHeader>
 
@@ -238,7 +262,7 @@ export default function CustomerProfilePage() {
               <div className="space-y-2">
                 <label
                   htmlFor="preferred-contact"
-                  className="text-sm font-medium text-white"
+                  className="text-sm font-medium text-foreground"
                 >
                   Preferred channel
                 </label>
@@ -246,18 +270,31 @@ export default function CustomerProfilePage() {
                 <select
                   id="preferred-contact"
                   name="preferredContact"
-                  defaultValue={demonstrationProfile.preferredContact}
-                  className="h-11 w-full rounded-lg border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition-colors focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10"
+                  defaultValue={
+                    demonstrationProfile.preferredContact
+                  }
+                  className={fieldClassName}
                 >
-                  <option value="WhatsApp">WhatsApp</option>
-                  <option value="Phone">Phone call</option>
-                  <option value="Email">Email</option>
-                  <option value="SMS">SMS</option>
+                  <option value="WhatsApp">
+                    WhatsApp
+                  </option>
+
+                  <option value="Phone">
+                    Phone call
+                  </option>
+
+                  <option value="Email">
+                    Email
+                  </option>
+
+                  <option value="SMS">
+                    SMS
+                  </option>
                 </select>
               </div>
 
               <div className="space-y-3">
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-black/20 p-4">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/40 p-4 transition-colors hover:bg-muted/60">
                   <input
                     type="checkbox"
                     defaultChecked
@@ -265,17 +302,18 @@ export default function CustomerProfilePage() {
                   />
 
                   <span>
-                    <span className="block text-sm font-medium text-white">
+                    <span className="block text-sm font-medium text-foreground">
                       Vehicle updates
                     </span>
 
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      Receive updates about saved vehicles and new inventory.
+                      Receive updates about saved vehicles
+                      and new inventory.
                     </span>
                   </span>
                 </label>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-black/20 p-4">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/40 p-4 transition-colors hover:bg-muted/60">
                   <input
                     type="checkbox"
                     defaultChecked
@@ -283,29 +321,31 @@ export default function CustomerProfilePage() {
                   />
 
                   <span>
-                    <span className="block text-sm font-medium text-white">
+                    <span className="block text-sm font-medium text-foreground">
                       Import progress
                     </span>
 
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      Receive sourcing, shipping and clearance notifications.
+                      Receive sourcing, shipping and
+                      clearance notifications.
                     </span>
                   </span>
                 </label>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-black/20 p-4">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/40 p-4 transition-colors hover:bg-muted/60">
                   <input
                     type="checkbox"
                     className="mt-0.5 size-4 accent-primary"
                   />
 
                   <span>
-                    <span className="block text-sm font-medium text-white">
+                    <span className="block text-sm font-medium text-foreground">
                       Marketing messages
                     </span>
 
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      Receive promotional news and featured vehicle alerts.
+                      Receive promotional news and
+                      featured vehicle alerts.
                     </span>
                   </span>
                 </label>
@@ -323,9 +363,9 @@ export default function CustomerProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+          <Card className="border border-border bg-card/80 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-lg text-white">
+              <CardTitle className="flex items-center gap-3 text-lg text-foreground">
                 <KeyRound
                   aria-hidden="true"
                   className="size-5 text-brand-gold"
@@ -334,31 +374,31 @@ export default function CustomerProfilePage() {
               </CardTitle>
 
               <CardDescription>
-                Security controls will become active when authentication is
-                connected.
+                Security controls will become active when
+                authentication is connected.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                <p className="text-sm font-medium text-white">
+              <div className="rounded-xl border border-border bg-muted/40 p-4">
+                <p className="text-sm font-medium text-foreground">
                   Password
                 </p>
 
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Password management will be provided through Better Auth
-                  during Phase 2.
+                  Password management will be provided
+                  through Better Auth during Phase 2.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                <p className="text-sm font-medium text-white">
+              <div className="rounded-xl border border-border bg-muted/40 p-4">
+                <p className="text-sm font-medium text-foreground">
                   Two-factor authentication
                 </p>
 
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Additional account protection is planned for the secured
-                  production dashboard.
+                  Additional account protection is planned
+                  for the secured production dashboard.
                 </p>
               </div>
 

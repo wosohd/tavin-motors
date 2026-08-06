@@ -61,22 +61,22 @@ const statusToneMap: Record<string, StatusTone> = {
 
 const toneClasses: Record<StatusTone, string> = {
   neutral:
-    "border-white/15 bg-white/[0.05] text-brand-silver",
+    "border-border bg-muted/70 text-muted-foreground",
 
   info:
-    "border-sky-400/25 bg-sky-400/10 text-sky-300",
+    "border-sky-600/25 bg-sky-500/10 text-sky-700 dark:border-sky-400/25 dark:text-sky-300",
 
   success:
-    "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
+    "border-emerald-600/25 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/25 dark:text-emerald-300",
 
   warning:
-    "border-amber-300/25 bg-amber-300/10 text-amber-200",
+    "border-amber-600/25 bg-amber-500/10 text-amber-700 dark:border-amber-300/25 dark:text-amber-200",
 
   danger:
-    "border-red-400/25 bg-red-400/10 text-red-300",
+    "border-red-600/25 bg-red-500/10 text-red-700 dark:border-red-400/25 dark:text-red-300",
 
   progress:
-    "border-brand-gold/25 bg-brand-gold/10 text-brand-gold",
+    "border-brand-gold/30 bg-brand-gold/10 text-brand-gold",
 };
 
 export function StatusBadge({

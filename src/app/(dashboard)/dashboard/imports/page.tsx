@@ -35,7 +35,8 @@ import { cn } from "@/lib/utils";
 
 export default function CustomerImportsPage() {
   const customerImports = importRequests.filter(
-    (request) => request.customerName === currentCustomer.name,
+    (request) =>
+      request.customerName === currentCustomer.name,
   );
 
   const completedImports = customerImports.filter(
@@ -50,7 +51,8 @@ export default function CustomerImportsPage() {
     customerImports.length > 0
       ? Math.round(
           customerImports.reduce(
-            (total, request) => total + request.progress,
+            (total, request) =>
+              total + request.progress,
             0,
           ) / customerImports.length,
         )
@@ -86,14 +88,17 @@ export default function CustomerImportsPage() {
         aria-label="Import request overview"
         className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
       >
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-burgundy/30 text-brand-gold">
-              <FileText aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-brand-gold/20 bg-brand-burgundy/10 text-brand-gold dark:bg-brand-burgundy/30">
+              <FileText
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {customerImports.length}
               </p>
 
@@ -104,14 +109,17 @@ export default function CustomerImportsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-blue-500/10 text-blue-300">
-              <Ship aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-sky-600/20 bg-sky-500/10 text-sky-700 dark:border-sky-400/20 dark:text-sky-300">
+              <Ship
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {activeImports}
               </p>
 
@@ -122,14 +130,17 @@ export default function CustomerImportsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-emerald-300">
-              <CheckCircle2 aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-emerald-600/20 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/20 dark:text-emerald-300">
+              <CheckCircle2
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {completedImports}
               </p>
 
@@ -140,14 +151,17 @@ export default function CustomerImportsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-amber-500/10 text-amber-300">
-              <Ship aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-amber-600/20 bg-amber-500/10 text-amber-700 dark:border-amber-300/20 dark:text-amber-300">
+              <Ship
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {averageProgress}%
               </p>
 
@@ -161,11 +175,14 @@ export default function CustomerImportsPage() {
 
       {customerImports.length > 0 ? (
         <>
-          <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+          <Card className="border border-border bg-card/80 shadow-sm">
             <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
               <div className="flex items-center gap-4">
-                <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-brand-gold/10 text-brand-gold">
-                  <WalletCards aria-hidden="true" className="size-5" />
+                <span className="grid size-12 shrink-0 place-items-center rounded-xl border border-brand-gold/20 bg-brand-gold/10 text-brand-gold">
+                  <WalletCards
+                    aria-hidden="true"
+                    className="size-5"
+                  />
                 </span>
 
                 <div>
@@ -173,15 +190,16 @@ export default function CustomerImportsPage() {
                     Combined budget
                   </p>
 
-                  <p className="mt-1 text-xl font-semibold text-white">
+                  <p className="mt-1 text-xl font-semibold text-foreground">
                     {formatVehiclePrice(totalBudget)}
                   </p>
                 </div>
               </div>
 
               <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-                Budgets shown here are demonstration figures and do not
-                represent invoices, deposits or final landed costs.
+                Budgets shown here are demonstration figures
+                and do not represent invoices, deposits or
+                final landed costs.
               </p>
             </CardContent>
           </Card>
@@ -190,13 +208,14 @@ export default function CustomerImportsPage() {
             <div className="mb-5">
               <h2
                 id="import-requests-heading"
-                className="text-xl font-semibold text-white"
+                className="text-xl font-semibold text-foreground"
               >
                 Your vehicle imports
               </h2>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Follow each request through its current import stage.
+                Follow each request through its current import
+                stage.
               </p>
             </div>
 
@@ -204,24 +223,27 @@ export default function CustomerImportsPage() {
               {customerImports.map((request) => (
                 <Card
                   key={request.id}
-                  className="border border-white/10 bg-white/[0.035] shadow-none"
+                  className="border border-border bg-card/80 shadow-sm transition-colors hover:bg-card"
                 >
                   <CardHeader className="gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <div className="mb-3 flex flex-wrap items-center gap-3">
-                        <StatusBadge status={request.status} />
+                        <StatusBadge
+                          status={request.status}
+                        />
 
                         <span className="text-xs text-muted-foreground">
                           Request ID: {request.id}
                         </span>
                       </div>
 
-                      <CardTitle className="text-xl text-white">
+                      <CardTitle className="text-xl text-foreground">
                         {request.vehicleName}
                       </CardTitle>
 
                       <CardDescription className="mt-1">
-                        Imported from {request.sourceMarket}
+                        Imported from{" "}
+                        {request.sourceMarket}
                       </CardDescription>
                     </div>
 
@@ -230,15 +252,17 @@ export default function CustomerImportsPage() {
                         Target budget
                       </p>
 
-                      <p className="mt-1 text-lg font-semibold text-white">
-                        {formatVehiclePrice(request.budget)}
+                      <p className="mt-1 text-lg font-semibold text-foreground">
+                        {formatVehiclePrice(
+                          request.budget,
+                        )}
                       </p>
                     </div>
                   </CardHeader>
 
                   <CardContent>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                      <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                      <div className="rounded-xl border border-border bg-muted/40 p-4">
                         <span className="flex items-center gap-2 text-xs text-muted-foreground">
                           <MapPin
                             aria-hidden="true"
@@ -247,12 +271,12 @@ export default function CustomerImportsPage() {
                           Source market
                         </span>
 
-                        <p className="mt-2 font-medium text-white">
+                        <p className="mt-2 font-medium text-foreground">
                           {request.sourceMarket}
                         </p>
                       </div>
 
-                      <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                      <div className="rounded-xl border border-border bg-muted/40 p-4">
                         <span className="flex items-center gap-2 text-xs text-muted-foreground">
                           <CalendarDays
                             aria-hidden="true"
@@ -261,12 +285,14 @@ export default function CustomerImportsPage() {
                           Submitted
                         </span>
 
-                        <p className="mt-2 font-medium text-white">
-                          {formatDashboardDate(request.submittedAt)}
+                        <p className="mt-2 font-medium text-foreground">
+                          {formatDashboardDate(
+                            request.submittedAt,
+                          )}
                         </p>
                       </div>
 
-                      <div className="rounded-xl border border-white/10 bg-black/20 p-4 sm:col-span-2 xl:col-span-1">
+                      <div className="rounded-xl border border-border bg-muted/40 p-4 sm:col-span-2 xl:col-span-1">
                         <span className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Search
                             aria-hidden="true"
@@ -275,20 +301,21 @@ export default function CustomerImportsPage() {
                           Assigned specialist
                         </span>
 
-                        <p className="mt-2 font-medium text-white">
-                          {request.assignedTo ?? "Assignment pending"}
+                        <p className="mt-2 font-medium text-foreground">
+                          {request.assignedTo ??
+                            "Assignment pending"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-5 rounded-xl border border-white/10 bg-black/20 p-5">
+                    <div className="mt-5 rounded-xl border border-border bg-muted/40 p-5">
                       <DashboardProgress
                         value={request.progress}
                         label={request.nextStep}
                       />
 
-                      <div className="mt-4 flex items-start gap-3 border-t border-white/10 pt-4">
-                        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-burgundy/25 text-brand-gold">
+                      <div className="mt-4 flex items-start gap-3 border-t border-border pt-4">
+                        <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-brand-gold/20 bg-brand-burgundy/10 text-brand-gold dark:bg-brand-burgundy/25">
                           <ArrowRight
                             aria-hidden="true"
                             className="size-4"
@@ -300,14 +327,14 @@ export default function CustomerImportsPage() {
                             Next step
                           </p>
 
-                          <p className="mt-1 text-sm font-medium text-white">
+                          <p className="mt-1 text-sm font-medium text-foreground">
                             {request.nextStep}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-5 flex flex-col gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+                    <div className="mt-5 flex flex-col gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
                       <DemoActionButton
                         variant="outline"
                         size="lg"
@@ -319,9 +346,11 @@ export default function CustomerImportsPage() {
                       <DemoActionButton
                         variant="ghost"
                         size="lg"
-                        className="text-muted-foreground hover:text-white"
+                        className="text-muted-foreground hover:text-foreground"
                       >
-                        <MessageSquare aria-hidden="true" />
+                        <MessageSquare
+                          aria-hidden="true"
+                        />
                         Contact import team
                       </DemoActionButton>
                     </div>
@@ -332,19 +361,23 @@ export default function CustomerImportsPage() {
           </section>
         </>
       ) : (
-        <Card className="border border-dashed border-white/15 bg-white/[0.025] shadow-none">
+        <Card className="border border-dashed border-border bg-card/60 shadow-sm">
           <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-            <span className="grid size-14 place-items-center rounded-full bg-white/5 text-brand-gold">
-              <Ship aria-hidden="true" className="size-6" />
+            <span className="grid size-14 place-items-center rounded-full border border-brand-gold/20 bg-brand-gold/10 text-brand-gold">
+              <Ship
+                aria-hidden="true"
+                className="size-6"
+              />
             </span>
 
-            <h2 className="mt-5 text-lg font-semibold text-white">
+            <h2 className="mt-5 text-lg font-semibold text-foreground">
               No import requests yet
             </h2>
 
             <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-              Tell the Tavin Motors team what vehicle you are looking for and
-              follow the sourcing and delivery process from this page.
+              Tell the Tavin Motors team what vehicle you are
+              looking for and follow the sourcing and delivery
+              process from this page.
             </p>
 
             <Link

@@ -21,7 +21,9 @@
   --color-primary-foreground: var(--primary-foreground);
 
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-foreground: var(
+    --secondary-foreground
+  );
 
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -48,11 +50,17 @@
   --color-chart-5: var(--chart-5);
 
   --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-foreground: var(
+    --sidebar-foreground
+  );
   --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary-foreground: var(
+    --sidebar-primary-foreground
+  );
   --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent-foreground: var(
+    --sidebar-accent-foreground
+  );
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
@@ -64,10 +72,79 @@
   --radius-3xl: calc(var(--radius) * 2.2);
 }
 
+/* Light presentation */
+
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   --radius: 0.625rem;
+
+  --background: #f6f2e9;
+  --foreground: #181a1f;
+
+  --card: #fffdf8;
+  --card-foreground: #181a1f;
+
+  --popover: #fffdf8;
+  --popover-foreground: #181a1f;
+
+  --primary: #921f2a;
+  --primary-foreground: #ffffff;
+
+  --secondary: #eae4d9;
+  --secondary-foreground: #1c1f24;
+
+  --muted: #eee9df;
+  --muted-foreground: #626873;
+
+  --accent: #a98543;
+  --accent-foreground: #17130c;
+
+  --destructive: #c62828;
+
+  --border: rgb(45 49 57 / 16%);
+  --input: rgb(45 49 57 / 20%);
+  --ring: #98763d;
+
+  --brand-black: #181a1f;
+  --brand-carbon: #e8e2d7;
+  --brand-burgundy: #751e29;
+  --brand-red: #921f2a;
+  --brand-gold: #98763d;
+  --brand-silver: #626873;
+
+  --chart-1: #921f2a;
+  --chart-2: #98763d;
+  --chart-3: #626873;
+  --chart-4: #751e29;
+  --chart-5: #146247;
+
+  --sidebar: #f0eadf;
+  --sidebar-foreground: #181a1f;
+  --sidebar-primary: #921f2a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e5ded2;
+  --sidebar-accent-foreground: #181a1f;
+  --sidebar-border: rgb(45 49 57 / 14%);
+  --sidebar-ring: #98763d;
+
+  --ambient-burgundy: rgb(146 31 42 / 10%);
+  --ambient-gold: rgb(152 118 61 / 12%);
+  --grid-line: rgb(24 26 31 / 5%);
+
+  --selection-background: rgb(146 31 42 / 78%);
+  --selection-foreground: #ffffff;
+
+  --metallic-1: #25282e;
+  --metallic-2: #757b84;
+  --metallic-3: #2c3037;
+  --metallic-4: #969ca4;
+}
+
+/* Dark presentation */
+
+.dark {
+  color-scheme: dark;
 
   --background: #07090c;
   --foreground: #f5f5f3;
@@ -117,10 +194,18 @@
   --sidebar-accent-foreground: #f5f5f3;
   --sidebar-border: rgb(212 215 220 / 14%);
   --sidebar-ring: #b79a5c;
-}
 
-.dark {
-  color-scheme: dark;
+  --ambient-burgundy: rgb(104 24 32 / 18%);
+  --ambient-gold: rgb(183 154 92 / 8%);
+  --grid-line: rgb(255 255 255 / 2.5%);
+
+  --selection-background: rgb(164 32 42 / 55%);
+  --selection-foreground: #ffffff;
+
+  --metallic-1: #ffffff;
+  --metallic-2: #a8adb5;
+  --metallic-3: #ffffff;
+  --metallic-4: #8b9098;
 }
 
 @layer base {
@@ -134,18 +219,20 @@
 
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
     font-family: var(--font-body), sans-serif;
     background-image:
       radial-gradient(
         circle at 15% 5%,
-        rgb(104 24 32 / 18%),
+        var(--ambient-burgundy),
         transparent 28rem
       ),
       radial-gradient(
         circle at 90% 15%,
-        rgb(183 154 92 / 8%),
+        var(--ambient-gold),
         transparent 30rem
       );
+    background-attachment: fixed;
   }
 
   h1,
@@ -163,8 +250,8 @@
   }
 
   ::selection {
-    background: rgb(164 32 42 / 55%);
-    color: #ffffff;
+    background: var(--selection-background);
+    color: var(--selection-foreground);
   }
 }
 
@@ -174,7 +261,7 @@
   }
 
   .tm-panel {
-    @apply border border-white/10 bg-white/[0.035] backdrop-blur-xl;
+    @apply border border-border bg-card/75 backdrop-blur-xl;
   }
 
   .tm-eyebrow {
@@ -189,18 +276,25 @@
 
   .carbon-grid {
     background-image:
-      linear-gradient(rgb(255 255 255 / 2.5%) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 2.5%) 1px, transparent 1px);
+      linear-gradient(
+        var(--grid-line) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        var(--grid-line) 1px,
+        transparent 1px
+      );
     background-size: 32px 32px;
   }
 
   .metallic-text {
     background-image: linear-gradient(
       115deg,
-      #ffffff 0%,
-      #a8adb5 38%,
-      #ffffff 55%,
-      #8b9098 100%
+      var(--metallic-1) 0%,
+      var(--metallic-2) 38%,
+      var(--metallic-3) 55%,
+      var(--metallic-4) 100%
     );
     background-clip: text;
     color: transparent;

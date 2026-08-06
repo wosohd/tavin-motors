@@ -15,19 +15,23 @@ export function DemoActionButton({
   confirmationDescription =
     "No information was permanently changed because this dashboard is using mock data.",
   onClick,
+  type = "button",
   ...props
 }: DemoActionButtonProps) {
   return (
     <Button
       {...props}
+      type={type}
       onClick={(event) => {
         onClick?.(event);
 
-        if (!event.defaultPrevented) {
-          toast.success(confirmationTitle, {
-            description: confirmationDescription,
-          });
+        if (event.defaultPrevented) {
+          return;
         }
+
+        toast.success(confirmationTitle, {
+          description: confirmationDescription,
+        });
       }}
     />
   );

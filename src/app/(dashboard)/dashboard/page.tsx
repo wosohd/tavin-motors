@@ -12,7 +12,6 @@ import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-heade
 import { DashboardProgress } from "@/components/dashboard/dashboard-progress";
 import { DashboardStatCard } from "@/components/dashboard/dashboard-stat-card";
 import { StatusBadge } from "@/components/dashboard/status-badge";
-import { VehicleVisual } from "@/components/vehicles/vehicle-visual";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { VehicleVisual } from "@/components/vehicles/vehicle-visual";
 import {
   currentCustomer,
   customerDashboardStats,
@@ -31,26 +31,37 @@ import {
   serviceBookings,
 } from "@/data/dashboard";
 import { getServiceById } from "@/data/services";
-import { formatVehiclePrice, getVehicleById } from "@/data/vehicles";
+import {
+  formatVehiclePrice,
+  getVehicleById,
+} from "@/data/vehicles";
 import {
   formatDashboardDate,
   formatDashboardDateTime,
 } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 
-const statIcons = [Heart, Ship, Wrench, MessagesSquare] as const;
+const statIcons = [
+  Heart,
+  Ship,
+  Wrench,
+  MessagesSquare,
+] as const;
 
 export default function CustomerDashboardPage() {
   const customerImports = importRequests.filter(
-    (request) => request.customerName === currentCustomer.name,
+    (request) =>
+      request.customerName === currentCustomer.name,
   );
 
   const customerBookings = serviceBookings.filter(
-    (booking) => booking.customerName === currentCustomer.name,
+    (booking) =>
+      booking.customerName === currentCustomer.name,
   );
 
   const customerEnquiries = enquiries.filter(
-    (enquiry) => enquiry.customerName === currentCustomer.name,
+    (enquiry) =>
+      enquiry.customerName === currentCustomer.name,
   );
 
   const savedVehicleDetails = savedVehicles
@@ -63,7 +74,9 @@ export default function CustomerDashboardPage() {
         item,
       ): item is {
         record: (typeof savedVehicles)[number];
-        vehicle: NonNullable<ReturnType<typeof getVehicleById>>;
+        vehicle: NonNullable<
+          ReturnType<typeof getVehicleById>
+        >;
       } => Boolean(item.vehicle),
     )
     .slice(0, 2);
@@ -104,25 +117,28 @@ export default function CustomerDashboardPage() {
         aria-label="Account overview"
         className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
       >
-        {customerDashboardStats.map((stat, index) => (
-          <DashboardStatCard
-            key={stat.label}
-            stat={stat}
-            icon={statIcons[index]}
-          />
-        ))}
+        {customerDashboardStats.map(
+          (stat, index) => (
+            <DashboardStatCard
+              key={stat.label}
+              stat={stat}
+              icon={statIcons[index]}
+            />
+          ),
+        )}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.35fr_0.9fr]">
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardHeader className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="text-xl text-white">
+              <CardTitle className="text-xl text-foreground">
                 Active import requests
               </CardTitle>
 
               <CardDescription>
-                Follow each request from sourcing to delivery.
+                Follow each request from sourcing to
+                delivery.
               </CardDescription>
             </div>
 
@@ -133,11 +149,11 @@ export default function CustomerDashboardPage() {
                   variant: "ghost",
                   size: "sm",
                 }),
-                "text-brand-gold",
+                "text-brand-gold hover:text-brand-gold",
               )}
             >
               View all
-              <ArrowRight />
+              <ArrowRight aria-hidden="true" />
             </Link>
           </CardHeader>
 
@@ -145,21 +161,25 @@ export default function CustomerDashboardPage() {
             {customerImports.map((request) => (
               <article
                 key={request.id}
-                className="rounded-xl border border-white/10 bg-black/20 p-4"
+                className="rounded-xl border border-border bg-muted/40 p-4 transition-colors hover:bg-muted/60"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="font-semibold text-white">
+                    <p className="font-semibold text-foreground">
                       {request.vehicleName}
                     </p>
 
                     <p className="mt-1 text-xs text-muted-foreground">
                       {request.sourceMarket} · Submitted{" "}
-                      {formatDashboardDate(request.submittedAt)}
+                      {formatDashboardDate(
+                        request.submittedAt,
+                      )}
                     </p>
                   </div>
 
-                  <StatusBadge status={request.status} />
+                  <StatusBadge
+                    status={request.status}
+                  />
                 </div>
 
                 <DashboardProgress
@@ -172,9 +192,9 @@ export default function CustomerDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-xl text-white">
+            <CardTitle className="text-xl text-foreground">
               Upcoming service
             </CardTitle>
 
@@ -184,69 +204,82 @@ export default function CustomerDashboardPage() {
           </CardHeader>
 
           <CardContent>
-            {customerBookings.slice(0, 1).map((booking) => {
-              const service = getServiceById(booking.serviceId);
+            {customerBookings
+              .slice(0, 1)
+              .map((booking) => {
+                const service = getServiceById(
+                  booking.serviceId,
+                );
 
-              return (
-                <article
-                  key={booking.id}
-                  className="rounded-xl border border-white/10 bg-black/20 p-5"
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="grid size-11 place-items-center rounded-xl bg-brand-burgundy/30 text-brand-gold">
-                      <Wrench className="size-5" />
-                    </span>
-
-                    <StatusBadge status={booking.status} />
-                  </div>
-
-                  <h2 className="mt-5 text-lg font-semibold text-white">
-                    {service?.title ?? "Auto-care service"}
-                  </h2>
-
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {booking.vehicleName}
-                  </p>
-
-                  <div className="mt-5 border-t border-white/10 pt-4">
-                    <p className="text-xs tracking-[0.16em] text-brand-gold uppercase">
-                      Appointment
-                    </p>
-
-                    <p className="mt-2 font-medium text-white">
-                      {formatDashboardDateTime(booking.scheduledFor)}
-                    </p>
-                  </div>
-
-                  <Link
-                    href="/dashboard/service-bookings"
-                    className={cn(
-                      buttonVariants({
-                        variant: "outline",
-                        size: "lg",
-                      }),
-                      "mt-5 w-full",
-                    )}
+                return (
+                  <article
+                    key={booking.id}
+                    className="rounded-xl border border-border bg-muted/40 p-5"
                   >
-                    Manage bookings
-                  </Link>
-                </article>
-              );
-            })}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="grid size-11 place-items-center rounded-xl border border-brand-gold/20 bg-brand-burgundy/10 text-brand-gold dark:bg-brand-burgundy/30">
+                        <Wrench
+                          aria-hidden="true"
+                          className="size-5"
+                        />
+                      </span>
+
+                      <StatusBadge
+                        status={booking.status}
+                      />
+                    </div>
+
+                    <h2 className="mt-5 text-lg font-semibold text-foreground">
+                      {service?.title ??
+                        "Auto-care service"}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {booking.vehicleName}
+                    </p>
+
+                    <div className="mt-5 border-t border-border pt-4">
+                      <p className="text-xs tracking-[0.16em] text-brand-gold uppercase">
+                        Appointment
+                      </p>
+
+                      <p className="mt-2 font-medium text-foreground">
+                        {formatDashboardDateTime(
+                          booking.scheduledFor,
+                        )}
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/dashboard/service-bookings"
+                      className={cn(
+                        buttonVariants({
+                          variant: "outline",
+                          size: "lg",
+                        }),
+                        "mt-5 w-full",
+                      )}
+                    >
+                      Manage bookings
+                    </Link>
+                  </article>
+                );
+              })}
           </CardContent>
         </Card>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardHeader className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="text-xl text-white">
+              <CardTitle className="text-xl text-foreground">
                 Recently saved vehicles
               </CardTitle>
 
               <CardDescription>
-                Continue comparing vehicles from your shortlist.
+                Continue comparing vehicles from your
+                shortlist.
               </CardDescription>
             </div>
 
@@ -257,67 +290,75 @@ export default function CustomerDashboardPage() {
                   variant: "ghost",
                   size: "sm",
                 }),
-                "text-brand-gold",
+                "text-brand-gold hover:text-brand-gold",
               )}
             >
               View all
-              <ArrowRight />
+              <ArrowRight aria-hidden="true" />
             </Link>
           </CardHeader>
 
           <CardContent className="grid gap-4 md:grid-cols-2">
-            {savedVehicleDetails.map(({ record, vehicle }) => (
-              <article
-                key={record.id}
-                className="overflow-hidden rounded-xl border border-white/10 bg-black/20"
-              >
-                <VehicleVisual
-                  vehicle={vehicle}
-                  compact
-                  className="aspect-[16/9]"
-                />
+            {savedVehicleDetails.map(
+              ({ record, vehicle }) => (
+                <article
+                  key={record.id}
+                  className="overflow-hidden rounded-xl border border-border bg-muted/40 transition-colors hover:bg-muted/60"
+                >
+                  <VehicleVisual
+                    vehicle={vehicle}
+                    compact
+                    className="aspect-[16/9]"
+                  />
 
-                <div className="p-4">
-                  <Badge
-                    variant="outline"
-                    className="border-brand-gold/25 bg-brand-gold/5 text-brand-gold"
-                  >
-                    Saved {formatDashboardDate(record.savedAt)}
-                  </Badge>
-
-                  <h2 className="mt-3 font-semibold text-white">
-                    {vehicle.year} {vehicle.make} {vehicle.model}
-                  </h2>
-
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {vehicle.trim}
-                  </p>
-
-                  <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-                    <span className="font-semibold text-white">
-                      {formatVehiclePrice(vehicle.price)}
-                    </span>
-
-                    <Link
-                      href={`/vehicles/${vehicle.slug}`}
-                      className={buttonVariants({
-                        variant: "outline",
-                        size: "sm",
-                      })}
+                  <div className="p-4">
+                    <Badge
+                      variant="outline"
+                      className="border-brand-gold/30 bg-brand-gold/10 text-brand-gold"
                     >
-                      View vehicle
-                    </Link>
+                      Saved{" "}
+                      {formatDashboardDate(
+                        record.savedAt,
+                      )}
+                    </Badge>
+
+                    <h2 className="mt-3 font-semibold text-foreground">
+                      {vehicle.year} {vehicle.make}{" "}
+                      {vehicle.model}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {vehicle.trim}
+                    </p>
+
+                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+                      <span className="font-semibold text-foreground">
+                        {formatVehiclePrice(
+                          vehicle.price,
+                        )}
+                      </span>
+
+                      <Link
+                        href={`/vehicles/${vehicle.slug}`}
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "sm",
+                        })}
+                      >
+                        View vehicle
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              ),
+            )}
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardHeader className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="text-xl text-white">
+              <CardTitle className="text-xl text-foreground">
                 Recent enquiries
               </CardTitle>
 
@@ -333,11 +374,11 @@ export default function CustomerDashboardPage() {
                   variant: "ghost",
                   size: "sm",
                 }),
-                "text-brand-gold",
+                "text-brand-gold hover:text-brand-gold",
               )}
             >
               View all
-              <ArrowRight />
+              <ArrowRight aria-hidden="true" />
             </Link>
           </CardHeader>
 
@@ -345,21 +386,25 @@ export default function CustomerDashboardPage() {
             {customerEnquiries.map((enquiry) => (
               <article
                 key={enquiry.id}
-                className="rounded-xl border border-white/10 bg-black/20 p-4"
+                className="rounded-xl border border-border bg-muted/40 p-4 transition-colors hover:bg-muted/60"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-foreground">
                       {enquiry.subject}
                     </p>
 
                     <p className="mt-1 text-xs text-muted-foreground">
                       {enquiry.channel} ·{" "}
-                      {formatDashboardDateTime(enquiry.createdAt)}
+                      {formatDashboardDateTime(
+                        enquiry.createdAt,
+                      )}
                     </p>
                   </div>
 
-                  <StatusBadge status={enquiry.status} />
+                  <StatusBadge
+                    status={enquiry.status}
+                  />
                 </div>
               </article>
             ))}

@@ -6,6 +6,7 @@ import { ExternalLink, Menu } from "lucide-react";
 
 import { BrandMark } from "@/components/brand/brand-mark";
 import { DashboardNavigation } from "@/components/dashboard/dashboard-navigation";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Sheet,
@@ -31,7 +32,7 @@ export function DashboardMobileMenu({
   const SwitchIcon = details.switchIcon;
 
   return (
-    <div className="flex items-center justify-between border-b border-white/10 bg-black/35 px-4 py-3 backdrop-blur-xl lg:hidden">
+    <div className="flex items-center justify-between border-b border-border bg-background/85 px-4 py-3 backdrop-blur-xl lg:hidden">
       <BrandMark />
 
       <Sheet open={open} onOpenChange={setOpen}>
@@ -41,6 +42,7 @@ export function DashboardMobileMenu({
               variant="outline"
               size="icon-lg"
               aria-label="Open dashboard navigation"
+              className="border-border bg-card/70"
             />
           }
         >
@@ -49,14 +51,25 @@ export function DashboardMobileMenu({
 
         <SheetContent
           side="left"
-          className="border-white/10 bg-[#0b0e12] p-0"
+          className="flex w-[88%] flex-col border-r border-border bg-background p-0 sm:max-w-sm"
         >
-          <SheetHeader className="border-b border-white/10 px-5 py-5">
-            <SheetTitle>{details.label}</SheetTitle>
+          <SheetHeader className="border-b border-border px-5 py-5 text-left">
+            <SheetTitle className="text-foreground">
+              {details.label}
+            </SheetTitle>
+
             <SheetDescription>
               {details.accountDetail}
             </SheetDescription>
           </SheetHeader>
+
+          <div className="border-b border-border px-4 py-4">
+            <p className="mb-3 text-xs font-semibold tracking-[0.15em] text-muted-foreground uppercase">
+              Appearance
+            </p>
+
+            <ThemeToggle variant="full" />
+          </div>
 
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5">
             <DashboardNavigation
@@ -64,7 +77,7 @@ export function DashboardMobileMenu({
               onNavigate={() => setOpen(false)}
             />
 
-            <div className="mt-auto space-y-2 border-t border-white/10 pt-5">
+            <div className="mt-auto space-y-2 border-t border-border pt-5">
               <Link
                 href={details.switchHref}
                 onClick={() => setOpen(false)}
@@ -73,7 +86,7 @@ export function DashboardMobileMenu({
                     variant: "outline",
                     size: "lg",
                   }),
-                  "w-full justify-start",
+                  "w-full justify-start border-border bg-card/60",
                 )}
               >
                 <SwitchIcon aria-hidden="true" />
@@ -88,7 +101,7 @@ export function DashboardMobileMenu({
                     variant: "ghost",
                     size: "lg",
                   }),
-                  "w-full justify-start",
+                  "w-full justify-start text-muted-foreground hover:text-foreground",
                 )}
               >
                 <ExternalLink aria-hidden="true" />

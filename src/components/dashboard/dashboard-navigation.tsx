@@ -18,7 +18,10 @@ function isNavigationItemActive(
     return pathname === item.href;
   }
 
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+  return (
+    pathname === item.href ||
+    pathname.startsWith(`${item.href}/`)
+  );
 }
 
 type DashboardNavigationProps = {
@@ -34,9 +37,16 @@ export function DashboardNavigation({
   const items = dashboardRoleDetails[role].navigation;
 
   return (
-    <nav aria-label="Dashboard navigation" className="space-y-1">
+    <nav
+      aria-label="Dashboard navigation"
+      className="space-y-1"
+    >
       {items.map((item) => {
-        const active = isNavigationItemActive(pathname, item);
+        const active = isNavigationItemActive(
+          pathname,
+          item,
+        );
+
         const Icon = item.icon;
 
         return (
@@ -48,17 +58,17 @@ export function DashboardNavigation({
             className={cn(
               "group flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
               active
-                ? "border-brand-gold/30 bg-brand-burgundy/30 text-white shadow-[inset_3px_0_0_var(--brand-gold)]"
-                : "border-transparent text-muted-foreground hover:border-white/10 hover:bg-white/[0.04] hover:text-white",
+                ? "border-brand-gold/35 bg-brand-burgundy/10 text-foreground shadow-[inset_3px_0_0_var(--brand-gold)] dark:bg-brand-burgundy/30"
+                : "border-transparent text-muted-foreground hover:border-sidebar-border hover:bg-sidebar-accent/70 hover:text-foreground",
             )}
           >
             <Icon
               aria-hidden="true"
               className={cn(
-                "size-4.5 transition-colors",
+                "size-4 transition-colors",
                 active
                   ? "text-brand-gold"
-                  : "text-brand-silver/60 group-hover:text-brand-gold",
+                  : "text-brand-silver/70 group-hover:text-brand-gold",
               )}
             />
 

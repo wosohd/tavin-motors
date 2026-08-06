@@ -32,7 +32,8 @@ import { cn } from "@/lib/utils";
 
 export default function CustomerListingsPage() {
   const customerListings = marketplaceListings.filter(
-    (listing) => listing.ownerName === currentCustomer.name,
+    (listing) =>
+      listing.ownerName === currentCustomer.name,
   );
 
   const approvedListings = customerListings.filter(
@@ -75,14 +76,17 @@ export default function CustomerListingsPage() {
         aria-label="Listing overview"
         className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
       >
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-burgundy/30 text-brand-gold">
-              <ReceiptText aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-brand-gold/20 bg-brand-burgundy/10 text-brand-gold dark:bg-brand-burgundy/30">
+              <ReceiptText
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {customerListings.length}
               </p>
 
@@ -93,14 +97,17 @@ export default function CustomerListingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-emerald-500/10 text-emerald-300">
-              <CarFront aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-emerald-600/20 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/20 dark:text-emerald-300">
+              <CarFront
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {approvedListings}
               </p>
 
@@ -111,14 +118,17 @@ export default function CustomerListingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-amber-500/10 text-amber-300">
-              <FilePenLine aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-amber-600/20 bg-amber-500/10 text-amber-700 dark:border-amber-300/20 dark:text-amber-300">
+              <FilePenLine
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {listingsUnderReview}
               </p>
 
@@ -129,14 +139,17 @@ export default function CustomerListingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <Card className="border border-border bg-card/80 shadow-sm">
           <CardContent className="flex items-center gap-4 p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-blue-500/10 text-blue-300">
-              <MessageSquare aria-hidden="true" className="size-5" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-sky-600/20 bg-sky-500/10 text-sky-700 dark:border-sky-400/20 dark:text-sky-300">
+              <MessageSquare
+                aria-hidden="true"
+                className="size-5"
+              />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-white">
+              <p className="text-2xl font-semibold text-foreground">
                 {totalEnquiries}
               </p>
 
@@ -152,13 +165,14 @@ export default function CustomerListingsPage() {
         <div className="mb-5">
           <h2
             id="customer-listings-heading"
-            className="text-xl font-semibold text-white"
+            className="text-xl font-semibold text-foreground"
           >
             Submitted vehicles
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Monitor approval decisions, listing views and buyer interest.
+            Monitor approval decisions, listing views and buyer
+            interest.
           </p>
         </div>
 
@@ -167,20 +181,24 @@ export default function CustomerListingsPage() {
             {customerListings.map((listing) => (
               <Card
                 key={listing.id}
-                className="border border-white/10 bg-white/[0.035] shadow-none"
+                className="border border-border bg-card/80 shadow-sm transition-colors hover:bg-card"
               >
                 <CardHeader className="gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="mb-3 flex flex-wrap items-center gap-3">
-                      <StatusBadge status={listing.status} />
+                      <StatusBadge
+                        status={listing.status}
+                      />
 
                       <span className="text-xs text-muted-foreground">
                         Submitted{" "}
-                        {formatDashboardDate(listing.submittedAt)}
+                        {formatDashboardDate(
+                          listing.submittedAt,
+                        )}
                       </span>
                     </div>
 
-                    <CardTitle className="text-xl text-white">
+                    <CardTitle className="text-xl text-foreground">
                       {listing.vehicleName}
                     </CardTitle>
 
@@ -196,15 +214,17 @@ export default function CustomerListingsPage() {
                       Asking price
                     </p>
 
-                    <p className="mt-1 text-lg font-semibold text-white">
-                      {formatVehiclePrice(listing.askingPrice)}
+                    <p className="mt-1 text-lg font-semibold text-foreground">
+                      {formatVehiclePrice(
+                        listing.askingPrice,
+                      )}
                     </p>
                   </div>
                 </CardHeader>
 
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-center justify-between rounded-xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-4">
                       <span className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Eye
                           aria-hidden="true"
@@ -213,12 +233,12 @@ export default function CustomerListingsPage() {
                         Listing views
                       </span>
 
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-foreground">
                         {listing.views}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between rounded-xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-4">
                       <span className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MessageSquare
                           aria-hidden="true"
@@ -227,15 +247,15 @@ export default function CustomerListingsPage() {
                         Enquiries
                       </span>
 
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-foreground">
                         {listing.enquiries}
                       </span>
                     </div>
                   </div>
 
                   {listing.reviewNote ? (
-                    <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/5 p-4">
-                      <p className="text-xs font-semibold tracking-[0.14em] text-amber-300 uppercase">
+                    <div className="mt-4 rounded-xl border border-amber-600/20 bg-amber-500/10 p-4 dark:border-amber-400/20">
+                      <p className="text-xs font-semibold tracking-[0.14em] text-amber-700 uppercase dark:text-amber-300">
                         Review note
                       </p>
 
@@ -245,7 +265,7 @@ export default function CustomerListingsPage() {
                     </div>
                   ) : null}
 
-                  <div className="mt-5 flex flex-col gap-2 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+                  <div className="mt-5 flex flex-col gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
                     <DemoActionButton
                       variant="outline"
                       size="lg"
@@ -257,7 +277,7 @@ export default function CustomerListingsPage() {
                     <DemoActionButton
                       variant="ghost"
                       size="lg"
-                      className="text-muted-foreground hover:text-red-300"
+                      className="text-muted-foreground hover:text-red-700 dark:hover:text-red-300"
                     >
                       <Trash2 aria-hidden="true" />
                       Withdraw
@@ -268,19 +288,22 @@ export default function CustomerListingsPage() {
             ))}
           </div>
         ) : (
-          <Card className="border border-dashed border-white/15 bg-white/[0.025] shadow-none">
+          <Card className="border border-dashed border-border bg-card/60 shadow-sm">
             <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <span className="grid size-14 place-items-center rounded-full bg-white/5 text-brand-gold">
-                <CarFront aria-hidden="true" className="size-6" />
+              <span className="grid size-14 place-items-center rounded-full border border-brand-gold/20 bg-brand-gold/10 text-brand-gold">
+                <CarFront
+                  aria-hidden="true"
+                  className="size-6"
+                />
               </span>
 
-              <h2 className="mt-5 text-lg font-semibold text-white">
+              <h2 className="mt-5 text-lg font-semibold text-foreground">
                 No vehicle listings yet
               </h2>
 
               <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                Submit a vehicle to the Tavin Motors marketplace and follow its
-                review status from this page.
+                Submit a vehicle to the Tavin Motors marketplace
+                and follow its review status from this page.
               </p>
 
               <Link

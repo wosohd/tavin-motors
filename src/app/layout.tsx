@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfig } from "@/lib/site";
 
@@ -20,10 +21,12 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    process.env.NEXT_PUBLIC_SITE_URL ??
+      "http://localhost:3000",
   ),
   title: {
-    default: "Tavin Motors | Premium Cars and Import Services",
+    default:
+      "Tavin Motors | Premium Cars and Import Services",
     template: "%s | Tavin Motors",
   },
   description: siteConfig.description,
@@ -49,16 +52,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${sora.variable} min-h-screen antialiased`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          enableColorScheme
+          disableTransitionOnChange
+          storageKey="tavin-motors-theme"
+        >
+          {children}
 
-        <Toaster
-          position="top-right"
-          closeButton
-        />
+          <Toaster
+            position="top-right"
+            closeButton
+          />
+        </ThemeProvider>
       </body>
     </html>
   );
