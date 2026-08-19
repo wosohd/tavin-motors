@@ -56,13 +56,12 @@ const introBootstrapScript = `
 `;
 
 const introCriticalStyles = `
-html[data-tavin-intro="show"] body {
-  overflow: hidden;
+html[data-tavin-intro="show"] .tm-site-intro {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: grid !important;
   background: #07090c !important;
-}
-
-html[data-tavin-intro="show"] .tm-site-content {
-  visibility: hidden !important;
 }
 
 html[data-tavin-intro="hide"] .tm-site-intro {

@@ -32,7 +32,7 @@ export function VehicleVisual({
   return (
     <div
       className={cn(
-        "group/visual relative isolate min-h-56 overflow-hidden bg-gradient-to-br",
+        "group/visual relative isolate min-h-56 w-full overflow-hidden bg-gradient-to-br",
         toneStyles[vehicle.tone],
         className,
       )}
@@ -41,15 +41,17 @@ export function VehicleVisual({
 
       <div className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-black/70 to-transparent" />
 
-      <div className="absolute top-4 left-4 z-20 border border-white/10 bg-black/30 px-3 py-1 text-[0.62rem] tracking-[0.18em] text-white/70 uppercase backdrop-blur-md">
-        {vehicle.stockCode}
+      <div className="absolute inset-x-3 top-3 z-20 flex items-start justify-between gap-2 sm:inset-x-4 sm:top-4">
+        <div className="shrink-0 border border-white/10 bg-black/30 px-2.5 py-1 text-[0.55rem] tracking-[0.12em] text-white/70 uppercase backdrop-blur-md sm:px-3 sm:text-[0.62rem] sm:tracking-[0.18em]">
+          {vehicle.stockCode}
+        </div>
+
+        <div className="min-w-0 text-right text-[0.52rem] leading-4 tracking-[0.1em] text-white/55 uppercase sm:text-[0.62rem] sm:tracking-[0.18em]">
+          Tavin Selection
+        </div>
       </div>
 
-      <div className="absolute top-4 right-4 z-20 text-[0.62rem] tracking-[0.18em] text-white/50 uppercase">
-        Tavin Selection
-      </div>
-
-      <div className="absolute inset-0 flex items-center justify-center px-8 pt-10">
+      <div className="absolute inset-0 flex items-center justify-center px-6 pt-10 sm:px-8">
         <div
           className={cn(
             "pointer-events-none absolute aspect-square rounded-full border border-current/10",
@@ -80,10 +82,12 @@ export function VehicleVisual({
         />
       </div>
 
-      <div className="absolute inset-x-8 bottom-8 h-px bg-gradient-to-r from-transparent via-current/45 to-transparent" />
+      <div className="absolute inset-x-5 bottom-8 h-px bg-gradient-to-r from-transparent via-current/45 to-transparent sm:inset-x-8" />
 
-      <div className="absolute right-5 bottom-4 text-[0.6rem] tracking-[0.22em] text-white/35 uppercase">
-        {vehicle.exteriorColor}
+      <div className="absolute inset-x-3 bottom-3 z-20 flex justify-end sm:inset-x-5 sm:bottom-4">
+        <div className="max-w-[70%] text-right text-[0.52rem] leading-4 tracking-[0.12em] text-white/45 uppercase sm:max-w-none sm:text-[0.6rem] sm:tracking-[0.22em]">
+          {vehicle.exteriorColor}
+        </div>
       </div>
     </div>
   );

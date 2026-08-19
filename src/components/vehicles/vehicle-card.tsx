@@ -28,7 +28,9 @@ const statusLabels: Record<Vehicle["status"], string> = {
   MARKETPLACE: "Local Market",
 };
 
-export function VehicleCard({ vehicle }: VehicleCardProps) {
+export function VehicleCard({
+  vehicle,
+}: VehicleCardProps) {
   return (
     <article className="group overflow-hidden border border-white/10 bg-card/70 transition-all duration-300 hover:-translate-y-1 hover:border-brand-gold/30 hover:shadow-[0_24px_80px_rgb(0_0_0_/_32%)]">
       <Link
@@ -54,7 +56,8 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
             </Badge>
 
             <h2 className="mt-4 text-xl font-semibold tracking-[-0.025em]">
-              {vehicle.year} {vehicle.make} {vehicle.model}
+              {vehicle.year} {vehicle.make}{" "}
+              {vehicle.model}
             </h2>
 
             <p className="mt-1 text-sm text-muted-foreground">
@@ -62,27 +65,42 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
             </p>
           </div>
 
-          <ArrowUpRight className="mt-1 size-5 text-muted-foreground transition-all group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-brand-gold" />
+          <ArrowUpRight
+            aria-hidden="true"
+            className="mt-1 size-5 text-muted-foreground transition-all group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-brand-gold"
+          />
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-y border-white/10 py-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-2">
-            <CalendarDays className="size-3.5 text-brand-gold" />
+            <CalendarDays
+              aria-hidden="true"
+              className="size-3.5 text-brand-gold"
+            />
             {vehicle.year}
           </span>
 
           <span className="flex items-center gap-2">
-            <Gauge className="size-3.5 text-brand-gold" />
+            <Gauge
+              aria-hidden="true"
+              className="size-3.5 text-brand-gold"
+            />
             {formatMileage(vehicle.mileage)} km
           </span>
 
           <span className="flex items-center gap-2">
-            <Fuel className="size-3.5 text-brand-gold" />
+            <Fuel
+              aria-hidden="true"
+              className="size-3.5 text-brand-gold"
+            />
             {vehicle.fuelType}
           </span>
 
           <span className="flex items-center gap-2">
-            <Settings2 className="size-3.5 text-brand-gold" />
+            <Settings2
+              aria-hidden="true"
+              className="size-3.5 text-brand-gold"
+            />
             {vehicle.transmission}
           </span>
         </div>
@@ -93,7 +111,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
               Asking price
             </p>
 
-            <p className="mt-1 text-lg font-semibold text-white">
+            <p className="mt-1 text-lg font-semibold text-foreground">
               {formatVehiclePrice(vehicle.price)}
             </p>
           </div>

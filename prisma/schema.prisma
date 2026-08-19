@@ -1,0 +1,522 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Authentication
+ * |--------------------------------------------------------------------------
+ * | Better Auth core models plus the Admin plugin fields.
+ */
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  role       String?   @default("user")
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  sessions Session[]
+  accounts Account[]
+
+  profile UserProfile?
+
+  savedVehicles               SavedVehicle[]
+  marketplaceListings         MarketplaceListing[] @relation("MarketplaceSeller")
+  reviewedMarketplaceListings MarketplaceListing[] @relation("MarketplaceReviewer")
+
+  importRequests    ImportRequest[]
+  serviceBookings   ServiceBooking[]
+  enquiries         Enquiry[]        @relation("EnquiryCustomer")
+  assignedEnquiries Enquiry[]        @relation("EnquiryAssignee")
+
+  siteContentUpdates SiteContent[] @relation("SiteContentUpdater")
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  impersonatedBy String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Customer profile
+ * |--------------------------------------------------------------------------
+ */
+
+model UserProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  phone            String?
+  county           String?
+  city             String?
+  address          String?
+  preferredContact String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Tavin Motors vehicle inventory
+ * |--------------------------------------------------------------------------
+ */
+
+model Vehicle {
+  id        String @id @default(cuid())
+  stockCode String @unique
+  slug      String @unique
+
+  make    String
+  model   String
+  trim    String?
+  year    Int
+  mileage Int
+  price   Int
+
+  fuelType      String
+  transmission  String
+  exteriorColor String
+  interiorColor String?
+  bodyType      String?
+  engineSize    String?
+  driveType     String?
+
+  status VehicleStatus
+  tone   VehicleTone
+
+  location    String?
+  description String?
+
+  featured  Boolean @default(false)
+  published Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images    VehicleImage[]
+  savedBy   SavedVehicle[]
+  enquiries Enquiry[]
+
+  @@index([status])
+  @@index([featured])
+  @@index([published])
+  @@index([make, model])
+  @@index([price])
+  @@index([year])
+}
+
+model VehicleImage {
+  id        String @id @default(cuid())
+  vehicleId String
+
+  url       String
+  publicId  String?
+  altText   String?
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId])
+  @@index([vehicleId, sortOrder])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Saved vehicles
+ * |--------------------------------------------------------------------------
+ */
+
+model SavedVehicle {
+  id        String   @id @default(cuid())
+  userId    String
+  vehicleId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vehicleId])
+  @@index([userId])
+  @@index([vehicleId])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Customer marketplace
+ * |--------------------------------------------------------------------------
+ */
+
+model MarketplaceListing {
+  id           String  @id @default(cuid())
+  sellerId     String
+  reviewedById String?
+
+  slug String @unique
+
+  make        String
+  model       String
+  trim        String?
+  year        Int
+  mileage     Int
+  askingPrice Int
+
+  fuelType      String
+  transmission  String
+  exteriorColor String
+  bodyType      String?
+  engineSize    String?
+  registration  String?
+
+  location    String
+  description String?
+
+  negotiable Boolean                  @default(false)
+  status     MarketplaceListingStatus @default(DRAFT)
+
+  moderationNote String?
+
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  publishedAt DateTime?
+  soldAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  seller     User  @relation("MarketplaceSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("MarketplaceReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  images MarketplaceListingImage[]
+
+  @@index([sellerId])
+  @@index([reviewedById])
+  @@index([status])
+  @@index([make, model])
+  @@index([askingPrice])
+  @@index([createdAt])
+}
+
+model MarketplaceListingImage {
+  id        String @id @default(cuid())
+  listingId String
+
+  url       String
+  publicId  String?
+  altText   String?
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listing MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([listingId, sortOrder])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Vehicle import requests
+ * |--------------------------------------------------------------------------
+ */
+
+model ImportRequest {
+  id     String @id @default(cuid())
+  userId String
+
+  referenceCode String @unique
+
+  make          String?
+  model         String?
+  preferredYear Int?
+
+  budgetMin Int?
+  budgetMax Int?
+
+  preferredOrigin String?
+  preferredColor  String?
+  fuelType        String?
+  transmission    String?
+
+  notes String?
+
+  status ImportRequestStatus @default(SUBMITTED)
+
+  quotationAmount Int?
+  quotationNotes  String?
+
+  submittedAt DateTime  @default(now())
+  quotedAt    DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([submittedAt])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Auto care and service bookings
+ * |--------------------------------------------------------------------------
+ */
+
+model ServiceBooking {
+  id     String @id @default(cuid())
+  userId String
+
+  referenceCode String @unique
+
+  serviceType String
+
+  vehicleMake         String
+  vehicleModel        String
+  vehicleYear         Int?
+  vehicleRegistration String?
+
+  preferredDate DateTime
+  preferredTime String?
+
+  location String?
+  notes    String?
+
+  status ServiceBookingStatus @default(PENDING)
+
+  confirmedAt DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([preferredDate])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Enquiries
+ * |--------------------------------------------------------------------------
+ * | User is required intentionally:
+ * | guests may browse but cannot submit an enquiry.
+ */
+
+model Enquiry {
+  id           String  @id @default(cuid())
+  userId       String
+  vehicleId    String?
+  assignedToId String?
+
+  referenceCode String @unique
+
+  category EnquiryCategory @default(GENERAL)
+
+  subject String
+  message String
+
+  status EnquiryStatus @default(NEW)
+
+  adminNotes String?
+
+  repliedAt DateTime?
+  closedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User     @relation("EnquiryCustomer", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo User?    @relation("EnquiryAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  vehicle    Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([vehicleId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Website content management
+ * |--------------------------------------------------------------------------
+ */
+
+model SiteContent {
+  id       String  @id @default(cuid())
+  key      String  @unique
+  title    String?
+  subtitle String?
+  body     String?
+  metadata Json?
+
+  status SiteContentStatus @default(DRAFT)
+
+  publishedAt DateTime?
+  scheduledAt DateTime?
+
+  updatedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  updatedBy User? @relation("SiteContentUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([updatedById])
+}
+
+/**
+ * |--------------------------------------------------------------------------
+ * | Enums
+ * |--------------------------------------------------------------------------
+ */
+
+enum VehicleStatus {
+  IN_STOCK
+  INCOMING
+  IMPORTABLE
+  MARKETPLACE
+}
+
+enum VehicleTone {
+  burgundy
+  silver
+  graphite
+  gold
+  blue
+  green
+}
+
+enum MarketplaceListingStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+  SOLD
+  ARCHIVED
+}
+
+enum ImportRequestStatus {
+  SUBMITTED
+  REVIEWING
+  SOURCING
+  QUOTED
+  APPROVED
+  PURCHASED
+  SHIPPING
+  CLEARING
+  READY_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum ServiceBookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum EnquiryCategory {
+  VEHICLE
+  SERVICE
+  IMPORT
+  FINANCING
+  TRADE_IN
+  GENERAL
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  REPLIED
+  CLOSED
+}
+
+enum SiteContentStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+  ARCHIVED
+}
