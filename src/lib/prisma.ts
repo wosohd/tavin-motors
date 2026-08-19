@@ -11,15 +11,28 @@ if (!databaseUrl) {
   );
 }
 
+const connectionUrl =
+  new URL(databaseUrl);
+
+const requiresTls =
+  connectionUrl.searchParams.get(
+    "sslmode",
+  ) === "require";
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 const adapter = new PrismaPg({
   connectionString: databaseUrl,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+
+  ...(requiresTls
+    ? {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }
+    : {}),
 });
 
 export const prisma =
