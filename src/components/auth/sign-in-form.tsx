@@ -2,11 +2,13 @@
 
 import {
   useState,
+  type FormEvent,
 } from "react";
 
 import Link from "next/link";
 
 import {
+  CheckCircle2,
   LoaderCircle,
   LockKeyhole,
 } from "lucide-react";
@@ -17,10 +19,12 @@ import { authClient } from "@/lib/auth-client";
 
 type SignInFormProps = {
   callbackUrl: string;
+  accountCreated?: boolean;
 };
 
 export function SignInForm({
   callbackUrl,
+  accountCreated = false,
 }: SignInFormProps) {
   const [
     pending,
@@ -32,9 +36,20 @@ export function SignInForm({
     setRememberMe,
   ] = useState(true);
 
+  const encodedCallbackUrl =
+    encodeURIComponent(
+      callbackUrl,
+    );
+
+  const signUpHref =
+    `/sign-up?callbackUrl=${encodedCallbackUrl}`;
+
+  const forgotPasswordHref =
+    `/forgot-password?callbackUrl=${encodedCallbackUrl}`;
+
   async function handleSubmit(
     event:
-      React.FormEvent<HTMLFormElement>,
+      FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
@@ -72,6 +87,7 @@ export function SignInForm({
           error.message ||
             "Unable to sign in.",
         );
+
         return;
       }
 
@@ -91,18 +107,31 @@ export function SignInForm({
     }
   }
 
-  const signUpHref =
-    callbackUrl === "/dashboard"
-      ? "/sign-up"
-      : `/sign-up?callbackUrl=${encodeURIComponent(
-          callbackUrl,
-        )}`;
-
   return (
     <form
       onSubmit={handleSubmit}
       className="space-y-5"
     >
+      {accountCreated && (
+        <div className="rounded-2xl border border-brand-gold/30 bg-brand-gold/5 p-4">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-brand-gold" />
+
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                Account created
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Your Tavin Motors account
+                is ready. Sign in to
+                continue.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div>
         <label
           htmlFor="email"
@@ -123,12 +152,23 @@ export function SignInForm({
       </div>
 
       <div>
-        <label
-          htmlFor="password"
-          className="mb-2 block text-sm font-medium"
-        >
-          Password
-        </label>
+        <div className="mb-2 flex items-center justify-between gap-4">
+          <label
+            htmlFor="password"
+            className="text-sm font-medium"
+          >
+            Password
+          </label>
+
+          <Link
+            href={
+              forgotPasswordHref
+            }
+            className="text-xs font-semibold text-brand-burgundy transition hover:underline dark:text-brand-gold"
+          >
+            Forgot password?
+          </Link>
+        </div>
 
         <PasswordField
           id="password"
@@ -167,7 +207,7 @@ export function SignInForm({
             Signing in...
           </>
         ) : (
-          "Enter your garage"
+          "Continue"
         )}
       </button>
 
@@ -175,12 +215,13 @@ export function SignInForm({
         <LockKeyhole className="mt-0.5 size-4 shrink-0 text-brand-burgundy dark:text-brand-gold" />
 
         Your account is used for saved
-        vehicles, enquiries, service bookings
-        and import requests.
+        vehicles, enquiries, service
+        bookings and import requests.
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
         New to Tavin Motors?{" "}
+
         <Link
           href={signUpHref}
           className="font-semibold text-brand-burgundy transition hover:underline dark:text-brand-gold"

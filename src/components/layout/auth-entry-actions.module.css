@@ -1,0 +1,198 @@
+.getStarted {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 999px;
+  padding: 1px;
+
+  background:
+    linear-gradient(
+      115deg,
+      #751e29,
+      #98763d,
+      #343941,
+      #751e29
+    );
+
+  background-size: 300% 300%;
+
+  animation:
+    tavinAuthBorder 5s ease-in-out infinite;
+
+  box-shadow:
+    0 8px 30px rgb(117 30 41 / 14%);
+
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.getStarted::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent,
+      rgb(117 30 41 / 34%),
+      rgb(152 118 61 / 30%),
+      transparent 58%
+    );
+
+  animation:
+    tavinAuthSpin 7s linear infinite;
+}
+
+.getStarted:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 38px rgb(117 30 41 / 22%);
+}
+
+.getStarted:active {
+  transform: translateY(0);
+}
+
+.getStarted:focus-visible {
+  outline: 2px solid #751e29;
+  outline-offset: 4px;
+}
+
+.inner {
+  position: relative;
+
+  display: inline-flex;
+  min-height: 2.6rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+
+  border-radius: inherit;
+
+  padding:
+    0.65rem
+    0.9rem;
+
+  background:
+    rgb(246 242 233 / 95%);
+
+  color: #751e29;
+
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  backdrop-filter: blur(14px);
+
+  transition:
+    background 220ms ease,
+    color 220ms ease;
+}
+
+.sparkle,
+.arrow {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+
+.sparkle {
+  color: #98763d;
+
+  animation:
+    tavinSparkle 2.4s ease-in-out infinite;
+}
+
+.arrow {
+  transition:
+    transform 220ms ease;
+}
+
+.getStarted:hover .arrow {
+  transform:
+    translate(2px, -2px);
+}
+
+:global(.dark) .getStarted {
+  box-shadow:
+    0 8px 32px rgb(152 118 61 / 15%);
+}
+
+:global(.dark) .getStarted:hover {
+  box-shadow:
+    0 12px 40px rgb(152 118 61 / 23%);
+}
+
+:global(.dark) .getStarted:focus-visible {
+  outline-color: #c7a766;
+}
+
+:global(.dark) .inner {
+  background:
+    rgb(9 11 14 / 95%);
+
+  color: #c7a766;
+}
+
+@keyframes tavinAuthBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes tavinAuthSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tavinSparkle {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@media (min-width: 640px) {
+  .inner {
+    min-height: 2.75rem;
+
+    padding:
+      0.7rem
+      1.05rem;
+
+    font-size: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .getStarted,
+  .getStarted::before,
+  .sparkle {
+    animation: none;
+  }
+
+  .getStarted:hover {
+    transform: none;
+  }
+}

@@ -1,18 +1,39 @@
+import {
+  headers,
+} from "next/headers";
+
 import Link from "next/link";
+
+import {
+  redirect,
+} from "next/navigation";
+
 import {
   ArrowRight,
-  CarFront,
-  Gauge,
   Heart,
   HeartOff,
-  Settings2,
 } from "lucide-react";
 
-import { DashboardDemoNotice } from "@/components/dashboard/dashboard-demo-notice";
-import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header";
-import { DemoActionButton } from "@/components/dashboard/demo-action-button";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import {
+  DashboardPageHeader,
+} from "@/components/dashboard/dashboard-page-header";
+
+import {
+  RemoveSavedVehicleButton,
+} from "@/components/dashboard/remove-saved-vehicle-button";
+
+import {
+  VehicleVisual,
+} from "@/components/vehicles/vehicle-visual";
+
+import {
+  Badge,
+} from "@/components/ui/badge";
+
+import {
+  buttonVariants,
+} from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
@@ -20,248 +41,387 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { VehicleVisual } from "@/components/vehicles/vehicle-visual";
-import { savedVehicles } from "@/data/dashboard";
+
 import {
-  formatMileage,
   formatVehiclePrice,
   getVehicleById,
 } from "@/data/vehicles";
-import { formatDashboardDate } from "@/lib/dashboard";
-import { cn } from "@/lib/utils";
 
-export default function SavedVehiclesPage() {
-  const savedVehicleDetails = savedVehicles
-    .map((record) => ({
-      record,
-      vehicle: getVehicleById(record.vehicleId),
-    }))
-    .filter(
-      (
-        item,
-      ): item is {
-        record: (typeof savedVehicles)[number];
-        vehicle: NonNullable<
-          ReturnType<typeof getVehicleById>
-        >;
-      } => Boolean(item.vehicle),
+import {
+  auth,
+} from "@/lib/auth";
+
+import {
+  formatDashboardDate,
+} from "@/lib/dashboard";
+
+import {
+  prisma,
+} from "@/lib/prisma";
+
+import {
+  cn,
+} from "@/lib/utils";
+
+export const dynamic =
+  "force-dynamic";
+
+export default async function SavedVehiclesPage() {
+  /*
+   * The dashboard must never rely
+   * on browser state to determine
+   * which customer's records are
+   * displayed.
+   *
+   * Resolve the authenticated user
+   * on the server.
+   */
+  const requestHeaders =
+    await headers();
+
+  const session =
+    await auth.api.getSession({
+      headers:
+        requestHeaders,
+    });
+
+  if (!session?.user) {
+    redirect(
+      `/sign-in?callbackUrl=${encodeURIComponent(
+        "/dashboard/saved-vehicles",
+      )}`,
     );
+  }
+
+  /*
+   * PostgreSQL is now the source of
+   * truth for the customer's saved
+   * vehicle collection.
+   */
+  const savedRecords =
+    await prisma.savedVehicle.findMany({
+      where: {
+        userId:
+          session.user.id,
+      },
+
+      orderBy: {
+        createdAt:
+          "desc",
+      },
+
+      select: {
+        id: true,
+        vehicleId: true,
+        createdAt: true,
+
+        vehicle: {
+          select: {
+            id: true,
+            slug: true,
+            published: true,
+          },
+        },
+      },
+    });
+
+  /*
+   * Public inventory presentation
+   * still comes from the existing
+   * approved catalogue during this
+   * phase.
+   *
+   * The synced PostgreSQL vehicle
+   * IDs intentionally match those
+   * catalogue IDs.
+   */
+  const savedVehicleDetails =
+    savedRecords
+      .map(
+        (record) => {
+          const vehicle =
+            getVehicleById(
+              record.vehicleId,
+            );
+
+          if (
+            !vehicle ||
+            !record.vehicle
+              .published
+          ) {
+            return null;
+          }
+
+          return {
+            record,
+            vehicle,
+          };
+        },
+      )
+      .filter(
+        (
+          item,
+        ): item is NonNullable<
+          typeof item
+        > =>
+          item !== null,
+      );
 
   return (
     <div className="space-y-8">
       <DashboardPageHeader
         eyebrow="Customer dashboard"
         title="Saved vehicles"
-        description="Review your shortlist, compare vehicle details and return to the full listing whenever you are ready."
+        description="Review the vehicles you have saved to your Tavin Motors account and return to them whenever you are ready to make an enquiry."
         actions={
           <Link
             href="/vehicles"
-            className={buttonVariants({
-              size: "lg",
-            })}
+            className={
+              buttonVariants({
+                size:
+                  "lg",
+              })
+            }
           >
             Browse vehicles
-            <ArrowRight aria-hidden="true" />
           </Link>
         }
       />
 
-      <DashboardDemoNotice />
-
-      <Card className="border border-border bg-card/80 shadow-sm">
-        <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-          <div className="flex items-center gap-4">
-            <span className="grid size-12 shrink-0 place-items-center rounded-xl border border-brand-gold/20 bg-brand-burgundy/10 text-brand-gold dark:bg-brand-burgundy/30">
-              <Heart
-                aria-hidden="true"
-                className="size-5"
-              />
+      <section
+        aria-label="Saved vehicle overview"
+        className="grid gap-4 sm:grid-cols-2"
+      >
+        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+          <CardContent className="flex items-center gap-4 p-5">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-burgundy/30 text-brand-gold">
+              <Heart className="size-5 fill-current" />
             </span>
 
             <div>
-              <p className="text-2xl font-semibold text-foreground">
-                {savedVehicleDetails.length}
+              <p className="text-2xl font-semibold text-white">
+                {
+                  savedVehicleDetails.length
+                }
               </p>
 
-              <p className="text-sm text-muted-foreground">
-                {savedVehicleDetails.length === 1
-                  ? "Vehicle in your shortlist"
-                  : "Vehicles in your shortlist"}
+              <p className="mt-1 text-xs tracking-[0.14em] text-muted-foreground uppercase">
+                Saved vehicles
               </p>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-            Your saved list currently uses demonstration data.
-            Removing a vehicle will show the intended interaction,
-            but it will not permanently change the records until
-            the backend is connected.
-          </p>
-        </CardContent>
-      </Card>
+        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+          <CardContent className="flex items-center gap-4 p-5">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/5 text-brand-gold">
+              <HeartOff className="size-5" />
+            </span>
 
-      <section aria-labelledby="saved-vehicles-heading">
-        <div className="mb-5">
-          <h2
-            id="saved-vehicles-heading"
-            className="text-xl font-semibold text-foreground"
-          >
+            <div>
+              <p className="text-sm font-semibold text-white">
+                Your shortlist
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Save or remove vehicles at any time before making an enquiry.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+        <CardHeader>
+          <CardTitle className="text-xl text-white">
             Your saved vehicles
-          </h2>
+          </CardTitle>
 
-          <p className="mt-1 text-sm text-muted-foreground">
-            Compare prices and specifications before making an
-            enquiry.
-          </p>
-        </div>
+          <CardDescription>
+            Compare vehicles from your shortlist and open the full vehicle page when you are ready to continue.
+          </CardDescription>
+        </CardHeader>
 
-        {savedVehicleDetails.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
-            {savedVehicleDetails.map(
-              ({ record, vehicle }) => (
-                <Card
-                  key={record.id}
-                  className="overflow-hidden border border-border bg-card/80 py-0 shadow-sm transition-colors hover:bg-card"
-                >
-                  <VehicleVisual
-                    vehicle={vehicle}
-                    compact
-                    className="aspect-[16/9]"
-                  />
+        <CardContent>
+          {savedVehicleDetails.length >
+          0 ? (
+            <div className="grid gap-6 xl:grid-cols-2">
+              {savedVehicleDetails.map(
+                ({
+                  record,
+                  vehicle,
+                }) => {
+                  const vehicleName =
+                    `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
 
-                  <CardHeader className="space-y-4 px-5 pt-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <Badge
-                        variant="outline"
-                        className="border-brand-gold/30 bg-brand-gold/10 text-brand-gold"
-                      >
-                        <Heart
-                          aria-hidden="true"
-                          className="mr-1 size-3.5 fill-current"
-                        />
-                        Saved{" "}
-                        {formatDashboardDate(
-                          record.savedAt,
-                        )}
-                      </Badge>
+                  return (
+                    <article
+                      key={
+                        record.id
+                      }
+                      className="overflow-hidden rounded-xl border border-white/10 bg-black/20"
+                    >
+                      <VehicleVisual
+                        vehicle={
+                          vehicle
+                        }
+                        className="min-h-56 border-b border-white/10"
+                      />
 
-                      <span className="text-sm font-semibold text-foreground">
-                        {formatVehiclePrice(
-                          vehicle.price,
-                        )}
-                      </span>
-                    </div>
+                      <div className="p-5">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge
+                                variant="outline"
+                                className="border-brand-gold/30 text-brand-gold"
+                              >
+                                {
+                                  vehicle.stockCode
+                                }
+                              </Badge>
 
-                    <div>
-                      <CardTitle className="text-lg text-foreground">
-                        {vehicle.year} {vehicle.make}{" "}
-                        {vehicle.model}
-                      </CardTitle>
+                              <Badge className="bg-brand-burgundy/30 text-brand-gold">
+                                Saved
+                              </Badge>
+                            </div>
 
-                      <CardDescription className="mt-1">
-                        {vehicle.trim}
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
+                            <h2 className="mt-4 text-lg font-semibold text-white">
+                              {
+                                vehicleName
+                              }
+                            </h2>
 
-                  <CardContent className="px-5 pb-5">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-lg border border-border bg-muted/40 p-3">
-                        <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Gauge
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {
+                                vehicle.trim
+                              }
+                            </p>
+                          </div>
+
+                          <Heart
                             aria-hidden="true"
-                            className="size-3.5 text-brand-gold"
+                            className="size-5 fill-brand-gold text-brand-gold"
                           />
-                          Mileage
-                        </span>
+                        </div>
 
-                        <p className="mt-1 text-sm font-medium text-foreground">
-                          {formatMileage(
-                            vehicle.mileage,
+                        <p className="mt-5 text-2xl font-semibold text-white">
+                          {formatVehiclePrice(
+                            vehicle.price,
                           )}
                         </p>
-                      </div>
 
-                      <div className="rounded-lg border border-border bg-muted/40 p-3">
-                        <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Settings2
-                            aria-hidden="true"
-                            className="size-3.5 text-brand-gold"
-                          />
-                          Transmission
-                        </span>
+                        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                          <div className="rounded-lg border border-white/10 bg-white/[0.025] p-3">
+                            <p className="text-[0.68rem] tracking-[0.14em] text-muted-foreground uppercase">
+                              Mileage
+                            </p>
 
-                        <p className="mt-1 truncate text-sm font-medium text-foreground">
-                          {vehicle.transmission}
+                            <p className="mt-1 text-sm font-medium text-white">
+                              {vehicle.mileage.toLocaleString(
+                                "en-KE",
+                              )}{" "}
+                              km
+                            </p>
+                          </div>
+
+                          <div className="rounded-lg border border-white/10 bg-white/[0.025] p-3">
+                            <p className="text-[0.68rem] tracking-[0.14em] text-muted-foreground uppercase">
+                              Transmission
+                            </p>
+
+                            <p className="mt-1 text-sm font-medium text-white">
+                              {
+                                vehicle.transmission
+                              }
+                            </p>
+                          </div>
+
+                          <div className="rounded-lg border border-white/10 bg-white/[0.025] p-3">
+                            <p className="text-[0.68rem] tracking-[0.14em] text-muted-foreground uppercase">
+                              Fuel
+                            </p>
+
+                            <p className="mt-1 text-sm font-medium text-white">
+                              {
+                                vehicle.fuelType
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="mt-5 text-xs text-muted-foreground">
+                          Saved{" "}
+                          {formatDashboardDate(
+                            record.createdAt.toISOString(),
+                          )}
                         </p>
+
+                        <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                          <RemoveSavedVehicleButton
+                            vehicleSlug={
+                              vehicle.slug
+                            }
+                            vehicleName={
+                              vehicleName
+                            }
+                          />
+
+                          <Link
+                            href={`/vehicles/${vehicle.slug}`}
+                            className={cn(
+                              buttonVariants({
+                                variant:
+                                  "ghost",
+                                size:
+                                  "sm",
+                              }),
+                              "text-brand-gold",
+                            )}
+                          >
+                            View details
+
+                            <ArrowRight className="size-4" />
+                          </Link>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="mt-5 flex flex-col gap-2 border-t border-border pt-5 sm:flex-row">
-                      <Link
-                        href={`/vehicles/${vehicle.slug}`}
-                        className={cn(
-                          buttonVariants({
-                            variant: "outline",
-                            size: "lg",
-                          }),
-                          "flex-1",
-                        )}
-                      >
-                        View vehicle
-                        <ArrowRight aria-hidden="true" />
-                      </Link>
-
-                      <DemoActionButton
-                        variant="ghost"
-                        size="lg"
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <HeartOff aria-hidden="true" />
-                        Remove
-                      </DemoActionButton>
-                    </div>
-                  </CardContent>
-                </Card>
-              ),
-            )}
-          </div>
-        ) : (
-          <Card className="border border-dashed border-border bg-card/60 shadow-sm">
-            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-              <span className="grid size-14 place-items-center rounded-full border border-brand-gold/20 bg-brand-gold/10 text-brand-gold">
-                <CarFront
-                  aria-hidden="true"
-                  className="size-6"
-                />
+                    </article>
+                  );
+                },
+              )}
+            </div>
+          ) : (
+            <div className="flex min-h-72 flex-col items-center justify-center border border-dashed border-white/15 bg-black/15 px-6 py-12 text-center">
+              <span className="grid size-14 place-items-center rounded-full bg-brand-burgundy/25 text-brand-gold">
+                <HeartOff className="size-6" />
               </span>
 
-              <h2 className="mt-5 text-lg font-semibold text-foreground">
+              <h2 className="mt-5 text-lg font-semibold text-white">
                 No saved vehicles yet
               </h2>
 
-              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                Browse the Tavin Motors inventory and save
-                vehicles you would like to compare or review
-                later.
+              <p className="mt-2 max-w-md text-sm leading-7 text-muted-foreground">
+                Browse the Tavin Motors inventory and use the Save Vehicle button to build your shortlist.
               </p>
 
               <Link
                 href="/vehicles"
                 className={cn(
                   buttonVariants({
-                    size: "lg",
+                    size:
+                      "lg",
                   }),
                   "mt-6",
                 )}
               >
-                Explore available vehicles
-                <ArrowRight aria-hidden="true" />
+                Browse vehicles
+
+                <ArrowRight className="size-4" />
               </Link>
-            </CardContent>
-          </Card>
-        )}
-      </section>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

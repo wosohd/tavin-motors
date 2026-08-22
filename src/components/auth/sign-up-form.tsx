@@ -68,6 +68,14 @@ export function SignUpForm({
     [password],
   );
 
+  const encodedCallbackUrl =
+    encodeURIComponent(
+      callbackUrl,
+    );
+
+  const signInHref =
+    `/sign-in?callbackUrl=${encodedCallbackUrl}`;
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ) {
@@ -112,8 +120,6 @@ export function SignUpForm({
           name,
           email,
           password,
-          callbackURL:
-            callbackUrl,
         });
 
       if (error) {
@@ -125,12 +131,19 @@ export function SignUpForm({
         return;
       }
 
-      toast.success(
-        "Your Tavin Motors account is ready.",
-      );
+      /*
+       * Better Auth autoSignIn is
+       * disabled server-side.
+       *
+       * Registration therefore ends
+       * here and the customer must
+       * explicitly sign in.
+       */
+      const destination =
+        `${signInHref}&registered=1`;
 
       window.location.assign(
-        callbackUrl,
+        destination,
       );
     } catch {
       toast.error(
@@ -140,13 +153,6 @@ export function SignUpForm({
       setPending(false);
     }
   }
-
-  const signInHref =
-    callbackUrl === "/dashboard"
-      ? "/sign-in"
-      : `/sign-in?callbackUrl=${encodeURIComponent(
-          callbackUrl,
-        )}`;
 
   return (
     <form
@@ -282,14 +288,15 @@ export function SignUpForm({
       <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand-burgundy dark:text-brand-gold" />
 
-        One account gives you
-        access to your personal
-        vehicle activity and
-        customer dashboard.
+        One account gives you access
+        to your personal vehicle
+        activity and customer
+        dashboard.
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
+
         <Link
           href={signInHref}
           className="font-semibold text-brand-burgundy transition hover:underline dark:text-brand-gold"

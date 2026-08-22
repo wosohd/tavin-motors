@@ -1,7 +1,9 @@
 import { AuthShell } from "@/components/auth/auth-shell";
-import { SignUpForm } from "@/components/auth/sign-up-form";
+import {
+  ForgotPasswordForm,
+} from "@/components/auth/forgot-password-form";
 
-type SignUpPageProps = {
+type ForgotPasswordPageProps = {
   searchParams: Promise<{
     callbackUrl?:
       | string
@@ -31,9 +33,9 @@ function resolveCallbackUrl(
   return "/";
 }
 
-export default async function SignUpPage({
+export default async function ForgotPasswordPage({
   searchParams,
-}: SignUpPageProps) {
+}: ForgotPasswordPageProps) {
   const params =
     await searchParams;
 
@@ -44,11 +46,11 @@ export default async function SignUpPage({
 
   return (
     <AuthShell
-      eyebrow="Join Tavin Motors"
-      title="Build your garage."
-      description="Create an account to save vehicles, make requests and manage your Tavin Motors activity."
+      eyebrow="Account recovery"
+      title="Find your way back."
+      description="Enter the email linked to your Tavin Motors account and we will send you a secure password-reset link."
     >
-      <SignUpForm
+      <ForgotPasswordForm
         callbackUrl={
           callbackUrl
         }

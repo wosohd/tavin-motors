@@ -220,7 +220,12 @@ model MarketplaceListing {
   sellerId     String
   reviewedById String?
 
-  slug String @unique
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  referenceCode String? @unique
+  slug          String  @unique
 
   make        String
   model       String
@@ -237,6 +242,8 @@ model MarketplaceListing {
   registration  String?
 
   location    String
+  condition   String?
+  ownership   String?
   description String?
 
   negotiable Boolean                  @default(false)
@@ -296,9 +303,14 @@ model ImportRequest {
 
   referenceCode String @unique
 
-  make          String?
-  model         String?
-  preferredYear Int?
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  vehicleDescription String?
+  make               String?
+  model              String?
+  preferredYear      Int?
 
   budgetMin Int?
   budgetMax Int?
@@ -308,7 +320,8 @@ model ImportRequest {
   fuelType        String?
   transmission    String?
 
-  notes String?
+  timeline String?
+  notes    String?
 
   status ImportRequestStatus @default(SUBMITTED)
 
@@ -342,10 +355,15 @@ model ServiceBooking {
 
   referenceCode String @unique
 
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
   serviceType String
 
-  vehicleMake         String
-  vehicleModel        String
+  vehicleDescription  String
+  vehicleMake         String?
+  vehicleModel        String?
   vehicleYear         Int?
   vehicleRegistration String?
 
@@ -386,6 +404,12 @@ model Enquiry {
   assignedToId String?
 
   referenceCode String @unique
+
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+
+  preferredContactMethod String?
 
   category EnquiryCategory @default(GENERAL)
 
@@ -502,6 +526,8 @@ enum EnquiryCategory {
   VEHICLE
   SERVICE
   IMPORT
+  MARKETPLACE
+  PARTNERSHIP
   FINANCING
   TRADE_IN
   GENERAL

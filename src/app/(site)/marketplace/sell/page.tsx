@@ -69,10 +69,11 @@ export default function SellVehiclePage() {
             </h2>
 
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              The production platform will connect this process to
-              seller accounts, image storage and the private admin
-              moderation dashboard.
-            </p>
+  Marketplace submissions are linked to authenticated
+  customer accounts. Image storage, permanent listing
+  records and administrative moderation will be connected
+  during the following backend milestones.
+</p>
 
             <div className="mt-9">
               {submissionSteps.map((step, index) => {

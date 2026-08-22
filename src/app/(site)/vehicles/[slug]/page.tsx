@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { VehicleCard } from "@/components/vehicles/vehicle-card";
+import { SaveVehicleButton } from "@/components/vehicles/save-vehicle-button";
 import { VehicleVisual } from "@/components/vehicles/vehicle-visual";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -195,6 +196,12 @@ export default async function VehicleDetailsPage({
                 Enquire About Vehicle
               </Link>
 
+              <SaveVehicleButton
+                vehicleSlug={vehicle.slug}
+                vehicleName={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                className="h-12"
+              />
+
               <Link
                 href="/import-a-car"
                 className={cn(
@@ -202,7 +209,7 @@ export default async function VehicleDetailsPage({
                     variant: "outline",
                     size: "lg",
                   }),
-                  "h-12 border-white/15 bg-white/5",
+                  "h-12 border-white/15 bg-white/5 sm:col-span-2",
                 )}
               >
                 Request Similar Import

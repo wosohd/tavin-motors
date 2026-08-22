@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { Phone, UserRound } from "lucide-react";
+
+import { Phone } from "lucide-react";
 
 import { BrandMark } from "@/components/brand/brand-mark";
+import { AuthEntryActions } from "@/components/layout/auth-entry-actions";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
@@ -11,7 +13,7 @@ import { cn } from "@/lib/utils";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-2xl">
-      <div className="tm-container flex h-20 items-center justify-between">
+      <div className="tm-container flex h-20 items-center justify-between gap-3">
         <BrandMark />
 
         <nav
@@ -40,7 +42,10 @@ export function SiteHeader() {
               "hidden text-muted-foreground hover:text-foreground xl:inline-flex",
             )}
           >
-            <Phone aria-hidden="true" className="size-4" />
+            <Phone
+              aria-hidden="true"
+              className="size-4"
+            />
             Contact
           </Link>
 
@@ -49,20 +54,7 @@ export function SiteHeader() {
             className="hidden lg:inline-flex"
           />
 
-          <Link
-            href="/dashboard"
-            aria-label="Open customer dashboard"
-            title="Customer dashboard"
-            className={cn(
-              buttonVariants({
-                variant: "outline",
-                size: "icon",
-              }),
-              "hidden border-border bg-card/70 sm:inline-flex",
-            )}
-          >
-            <UserRound aria-hidden="true" className="size-4" />
-          </Link>
+          <AuthEntryActions />
 
           <Link
             href="/import-a-car"
@@ -70,7 +62,7 @@ export function SiteHeader() {
               buttonVariants({
                 size: "sm",
               }),
-              "hidden bg-primary px-5 shadow-[0_0_24px_rgb(164_32_42_/_18%)] hover:bg-primary/90 md:inline-flex",
+              "hidden bg-primary px-5 shadow-[0_0_24px_rgb(164_32_42_/_18%)] hover:bg-primary/90 xl:inline-flex",
             )}
           >
             Import a Car

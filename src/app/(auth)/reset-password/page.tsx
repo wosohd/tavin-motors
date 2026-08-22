@@ -1,13 +1,15 @@
-import { AuthShell } from "@/components/auth/auth-shell";
-import { SignInForm } from "@/components/auth/sign-in-form";
+import {
+  AuthShell,
+} from "@/components/auth/auth-shell";
+import {
+  ResetPasswordForm,
+} from "@/components/auth/reset-password-form";
 
-type SignInPageProps = {
+type ResetPasswordPageProps = {
   searchParams: Promise<{
+    token?: string | string[];
+    error?: string | string[];
     callbackUrl?:
-      | string
-      | string[];
-
-    registered?:
       | string
       | string[];
   }>;
@@ -44,33 +46,36 @@ function resolveCallbackUrl(
   return "/";
 }
 
-export default async function SignInPage({
+export default async function ResetPasswordPage({
   searchParams,
-}: SignInPageProps) {
+}: ResetPasswordPageProps) {
   const params =
     await searchParams;
+
+  const token =
+    first(params.token);
+
+  const error =
+    first(params.error);
 
   const callbackUrl =
     resolveCallbackUrl(
       params.callbackUrl,
     );
 
-  const accountCreated =
-    first(params.registered) ===
-    "1";
-
   return (
     <AuthShell
-      eyebrow="Private garage access"
-      title="Welcome back."
-      description="Sign in to continue your Tavin Motors journey."
+      eyebrow="Secure account recovery"
+      title="Choose a new password."
+      description="Create a new password for your Tavin Motors account."
     >
-      <SignInForm
+      <ResetPasswordForm
+        token={token}
+        invalidToken={
+          Boolean(error)
+        }
         callbackUrl={
           callbackUrl
-        }
-        accountCreated={
-          accountCreated
         }
       />
     </AuthShell>

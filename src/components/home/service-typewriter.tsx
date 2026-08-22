@@ -24,7 +24,9 @@ const deletingSpeed = 28;
 const completedPhraseDelay = 1700;
 const nextPhraseDelay = 350;
 
-type AnimationPhase = "typing" | "deleting";
+type AnimationPhase =
+  | "typing"
+  | "deleting";
 
 type ServiceTypewriterProps = {
   className?: string;
@@ -37,9 +39,10 @@ function subscribeToReducedMotion(
     return () => undefined;
   }
 
-  const mediaQuery = window.matchMedia(
-    reducedMotionQuery,
-  );
+  const mediaQuery =
+    window.matchMedia(
+      reducedMotionQuery,
+    );
 
   mediaQuery.addEventListener(
     "change",
@@ -59,8 +62,9 @@ function getReducedMotionSnapshot() {
     return false;
   }
 
-  return window.matchMedia(reducedMotionQuery)
-    .matches;
+  return window.matchMedia(
+    reducedMotionQuery,
+  ).matches;
 }
 
 function getReducedMotionServerSnapshot() {
@@ -81,14 +85,23 @@ export function ServiceTypewriter({
   const prefersReducedMotion =
     usePrefersReducedMotion();
 
-  const [phraseIndex, setPhraseIndex] =
-    useState(0);
+  const [
+    phraseIndex,
+    setPhraseIndex,
+  ] = useState(0);
 
-  const [displayedText, setDisplayedText] =
-    useState("");
+  const [
+    displayedText,
+    setDisplayedText,
+  ] = useState("");
 
-  const [phase, setPhase] =
-    useState<AnimationPhase>("typing");
+  const [
+    phase,
+    setPhase,
+  ] =
+    useState<AnimationPhase>(
+      "typing",
+    );
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -96,48 +109,77 @@ export function ServiceTypewriter({
     }
 
     const currentPhrase =
-      servicePhrases[phraseIndex] ??
+      servicePhrases[
+        phraseIndex
+      ] ??
       servicePhrases[0];
 
-    let timer: ReturnType<typeof setTimeout>;
+    let timer:
+      ReturnType<
+        typeof setTimeout
+      >;
 
     if (phase === "typing") {
       if (
         displayedText.length <
         currentPhrase.length
       ) {
-        timer = setTimeout(() => {
+        timer = setTimeout(
+          () => {
+            setDisplayedText(
+              currentPhrase.slice(
+                0,
+                displayedText.length +
+                  1,
+              ),
+            );
+          },
+          typingSpeed,
+        );
+      } else {
+        timer = setTimeout(
+          () => {
+            setPhase(
+              "deleting",
+            );
+          },
+          completedPhraseDelay,
+        );
+      }
+    } else if (
+      displayedText.length >
+      0
+    ) {
+      timer = setTimeout(
+        () => {
           setDisplayedText(
             currentPhrase.slice(
               0,
-              displayedText.length + 1,
+              displayedText.length -
+                1,
             ),
           );
-        }, typingSpeed);
-      } else {
-        timer = setTimeout(() => {
-          setPhase("deleting");
-        }, completedPhraseDelay);
-      }
-    } else if (displayedText.length > 0) {
-      timer = setTimeout(() => {
-        setDisplayedText(
-          currentPhrase.slice(
-            0,
-            displayedText.length - 1,
-          ),
-        );
-      }, deletingSpeed);
+        },
+        deletingSpeed,
+      );
     } else {
-      timer = setTimeout(() => {
-        setPhraseIndex(
-          (currentIndex) =>
-            (currentIndex + 1) %
-            servicePhrases.length,
-        );
+      timer = setTimeout(
+        () => {
+          setPhraseIndex(
+            (
+              currentIndex,
+            ) =>
+              (currentIndex +
+                1) %
+              servicePhrases.length,
+          );
 
-        setPhase("typing");
-      }, nextPhraseDelay);
+          setPhase(
+            "typing",
+          );
+        },
+        nextPhraseDelay,
+      );
     }
 
     return () => {
@@ -150,9 +192,25 @@ export function ServiceTypewriter({
     prefersReducedMotion,
   ]);
 
-  const visibleText = prefersReducedMotion
-    ? servicePhrases[0]
-    : displayedText;
+  const visibleText =
+    prefersReducedMotion
+      ? servicePhrases[0]
+      : displayedText;
+
+  /*
+   * Keep the final typed
+   * character and cursor in
+   * one non-wrapping inline
+   * group. This allows the
+   * cursor to follow the text
+   * onto the next line on
+   * narrow screens.
+   */
+  const textBeforeCursor =
+    visibleText.slice(0, -1);
+
+  const finalCharacter =
+    visibleText.slice(-1);
 
   return (
     <div
@@ -164,13 +222,17 @@ export function ServiceTypewriter({
     >
       <p
         aria-hidden="true"
-        className="flex max-w-3xl items-start text-lg leading-8 font-semibold tracking-[-0.01em] text-brand-burgundy sm:text-xl lg:text-2xl dark:text-brand-gold"
+        className="max-w-3xl whitespace-pre-wrap break-words text-lg leading-8 font-semibold tracking-[-0.01em] text-brand-burgundy sm:text-xl lg:text-2xl dark:text-brand-gold"
       >
-        <span>{visibleText}</span>
+        {textBeforeCursor}
 
-        <span
-          className="tm-typewriter-cursor mt-1 ml-1 inline-block h-6 w-0.5 shrink-0 bg-brand-red sm:h-7 dark:bg-brand-gold"
-        />
+        <span className="whitespace-nowrap">
+          {finalCharacter}
+
+          <span
+            className="tm-typewriter-cursor relative top-1 ml-1 inline-block h-6 w-0.5 bg-brand-red sm:h-7 dark:bg-brand-gold"
+          />
+        </span>
       </p>
     </div>
   );

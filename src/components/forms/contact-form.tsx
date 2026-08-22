@@ -1,17 +1,48 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useEffect,
+} from "react";
+
+import {
+  useRouter,
+} from "next/navigation";
+
+import {
+  zodResolver,
+} from "@hookform/resolvers/zod";
+
 import {
   CheckCircle2,
   LoaderCircle,
+  LockKeyhole,
   Send,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  useForm,
+} from "react-hook-form";
+
+import {
+  toast,
+} from "sonner";
+
+import {
+  Button,
+} from "@/components/ui/button";
+
+import {
+  Input,
+} from "@/components/ui/input";
+
+import {
+  Textarea,
+} from "@/components/ui/textarea";
+
+import {
+  authClient,
+} from "@/lib/auth-client";
+
 import {
   contactSchema,
   type ContactValues,
@@ -27,13 +58,28 @@ type FieldErrorProps = {
   message?: string;
 };
 
+type EnquirySubmissionResponse = {
+  message?: string;
+
+  enquiry?: {
+    referenceCode: string;
+    category: string;
+    status: string;
+  };
+};
+
 const inputClassName =
   "h-11 border-white/10 bg-black/25 focus-visible:border-brand-gold/50 focus-visible:ring-brand-gold/20";
 
 const selectClassName =
   "h-11 w-full border border-white/10 bg-black/25 px-3 text-sm text-foreground outline-none transition-colors focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10";
 
-function FieldError({ message }: FieldErrorProps) {
+const contactDraftPrefix =
+  "tavin-contact-enquiry-draft";
+
+function FieldError({
+  message,
+}: FieldErrorProps) {
   if (!message) {
     return null;
   }
@@ -48,11 +94,51 @@ function FieldError({ message }: FieldErrorProps) {
   );
 }
 
+function getCurrentCallbackUrl() {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return "/contact";
+  }
+
+  return (
+    window.location.pathname +
+    window.location.search +
+    window.location.hash
+  );
+}
+
+function getContactDraftKey() {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return contactDraftPrefix;
+  }
+
+  return (
+    contactDraftPrefix +
+    ":" +
+    window.location.pathname +
+    window.location.search
+  );
+}
+
 export function ContactForm({
   defaultSubject = "",
   defaultMessage = "",
   defaultEnquiryType = "",
 }: ContactFormProps) {
+  const router =
+    useRouter();
+
+  const {
+    data: session,
+    isPending: sessionPending,
+  } =
+    authClient.useSession();
+
   const {
     register,
     handleSubmit,
@@ -61,45 +147,250 @@ export function ContactForm({
       errors,
       isSubmitting,
     },
-  } = useForm<ContactValues>({
-    resolver: zodResolver(contactSchema),
-    defaultValues: {
-      fullName: "",
-      phone: "",
-      email: "",
-      enquiryType: defaultEnquiryType,
-      subject: defaultSubject,
-      preferredMethod: "",
-      message: defaultMessage,
-    },
-  });
+  } =
+    useForm<ContactValues>({
+      resolver: zodResolver(
+        contactSchema,
+      ),
 
-  async function onSubmit(values: ContactValues) {
-    void values;
-
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 700);
+      defaultValues: {
+        fullName: "",
+        phone: "",
+        email: "",
+        enquiryType:
+          defaultEnquiryType,
+        subject:
+          defaultSubject,
+        preferredMethod: "",
+        message:
+          defaultMessage,
+      },
     });
 
-    toast.success("Enquiry received", {
-      description:
-        "The Tavin Motors team will review your message and contact you using your preferred method.",
-    });
+  /*
+   * Restore the customer's
+   * enquiry after returning
+   * from authentication.
+   */
+  useEffect(() => {
+    if (
+      typeof window ===
+      "undefined"
+    ) {
+      return;
+    }
 
-    reset({
-      fullName: "",
-      phone: "",
-      email: "",
-      enquiryType: "",
-      subject: "",
-      preferredMethod: "",
-      message: "",
-    });
+    const draftKey =
+      getContactDraftKey();
+
+    const storedDraft =
+      window.sessionStorage.getItem(
+        draftKey,
+      );
+
+    if (!storedDraft) {
+      return;
+    }
+
+    try {
+      const draft =
+        JSON.parse(
+          storedDraft,
+        ) as ContactValues;
+
+      reset(draft);
+    } catch {
+      window.sessionStorage.removeItem(
+        draftKey,
+      );
+    }
+  }, [reset]);
+
+  async function onSubmit(
+    values: ContactValues,
+  ) {
+    /*
+     * Guests may prepare an
+     * enquiry, but it cannot be
+     * submitted without an
+     * authenticated account.
+     */
+    if (!session?.user) {
+      const draftKey =
+        getContactDraftKey();
+
+      window.sessionStorage.setItem(
+        draftKey,
+        JSON.stringify(values),
+      );
+
+      const callbackUrl =
+        getCurrentCallbackUrl();
+
+      toast.info(
+        "Tavin account required",
+        {
+          description:
+            "Create an account or sign in to continue with your enquiry.",
+        },
+      );
+
+      router.push(
+        `/sign-up?callbackUrl=${encodeURIComponent(
+          callbackUrl,
+        )}`,
+      );
+
+      return;
+    }
+
+    /*
+     * The client-side session check
+     * provides the user experience.
+     *
+     * The API performs the real
+     * server-side authentication
+     * and validation before writing
+     * the enquiry to PostgreSQL.
+     */
+    try {
+      const response =
+        await fetch(
+          "/api/enquiries",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify(
+                values,
+              ),
+          },
+        );
+
+      const result =
+        (await response
+          .json()
+          .catch(
+            () => null,
+          )) as
+          | EnquirySubmissionResponse
+          | null;
+
+      /*
+       * A session can expire
+       * between rendering the
+       * page and submitting the
+       * enquiry.
+       *
+       * Preserve everything and
+       * send the customer back
+       * through sign-in.
+       */
+      if (
+        response.status ===
+        401
+      ) {
+        window.sessionStorage.setItem(
+          getContactDraftKey(),
+          JSON.stringify(
+            values,
+          ),
+        );
+
+        const callbackUrl =
+          getCurrentCallbackUrl();
+
+        toast.info(
+          "Please sign in again",
+          {
+            description:
+              "Your enquiry has been preserved.",
+          },
+        );
+
+        router.push(
+          `/sign-in?callbackUrl=${encodeURIComponent(
+            callbackUrl,
+          )}`,
+        );
+
+        return;
+      }
+
+      if (!response.ok) {
+        toast.error(
+          "Unable to submit enquiry",
+          {
+            description:
+              result?.message ??
+              "Please check your information and try again.",
+          },
+        );
+
+        return;
+      }
+
+      /*
+       * Only remove the saved draft
+       * after PostgreSQL confirms
+       * the enquiry was created.
+       */
+      window.sessionStorage.removeItem(
+        getContactDraftKey(),
+      );
+
+      const referenceCode =
+        result?.enquiry
+          ?.referenceCode;
+
+      toast.success(
+        "Enquiry received",
+        {
+          description:
+            referenceCode
+              ? `Reference ${referenceCode}. The Tavin Motors team will review your message and contact you using your preferred method.`
+              : "The Tavin Motors team will review your message and contact you using your preferred method.",
+        },
+      );
+
+      reset({
+        fullName: "",
+        phone: "",
+        email: "",
+        enquiryType: "",
+        subject: "",
+        preferredMethod: "",
+        message: "",
+      });
+    } catch {
+      /*
+       * Keep the form populated on
+       * network failure so the
+       * customer does not lose
+       * their enquiry.
+       */
+      toast.error(
+        "Unable to submit enquiry",
+        {
+          description:
+            "A connection error occurred. Your information has not been cleared, so you can try again.",
+        },
+      );
+    }
   }
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={
+        handleSubmit(
+          onSubmit,
+        )
+      }
       noValidate
       className="tm-panel p-5 sm:p-7 lg:p-8"
     >
@@ -113,10 +404,46 @@ export function ContactForm({
         </h2>
 
         <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
-          Ask about a vehicle, assisted import, marketplace listing,
-          service appointment or any other Tavin Motors service.
+          Ask about a vehicle,
+          assisted import,
+          marketplace listing,
+          service appointment or
+          any other Tavin Motors
+          service. An authenticated
+          Tavin account is required
+          before an enquiry can be
+          submitted.
         </p>
       </div>
+
+      {!sessionPending &&
+        !session?.user && (
+          <div className="mt-6 border border-brand-gold/25 bg-brand-gold/[0.05] p-4">
+            <div className="flex items-start gap-3">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-gold/10 text-brand-gold">
+                <LockKeyhole
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              </span>
+
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Account required
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Complete your enquiry
+                  now. We will keep your
+                  information while you
+                  create an account or
+                  sign in, then return
+                  you here.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
       <div className="mt-7 grid gap-5 sm:grid-cols-2">
         <label className="block">
@@ -125,13 +452,20 @@ export function ContactForm({
           </span>
 
           <Input
-            {...register("fullName")}
+            {...register(
+              "fullName",
+            )}
             placeholder="Your full name"
             autoComplete="name"
             className={`mt-2 ${inputClassName}`}
           />
 
-          <FieldError message={errors.fullName?.message} />
+          <FieldError
+            message={
+              errors.fullName
+                ?.message
+            }
+          />
         </label>
 
         <label className="block">
@@ -140,14 +474,21 @@ export function ContactForm({
           </span>
 
           <Input
-            {...register("phone")}
+            {...register(
+              "phone",
+            )}
             type="tel"
             placeholder="+254 7XX XXX XXX"
             autoComplete="tel"
             className={`mt-2 ${inputClassName}`}
           />
 
-          <FieldError message={errors.phone?.message} />
+          <FieldError
+            message={
+              errors.phone
+                ?.message
+            }
+          />
         </label>
 
         <label className="block">
@@ -160,14 +501,21 @@ export function ContactForm({
           </span>
 
           <Input
-            {...register("email")}
+            {...register(
+              "email",
+            )}
             type="email"
             placeholder="name@example.com"
             autoComplete="email"
             className={`mt-2 ${inputClassName}`}
           />
 
-          <FieldError message={errors.email?.message} />
+          <FieldError
+            message={
+              errors.email
+                ?.message
+            }
+          />
         </label>
 
         <label className="block">
@@ -176,10 +524,15 @@ export function ContactForm({
           </span>
 
           <select
-            {...register("enquiryType")}
+            {...register(
+              "enquiryType",
+            )}
             className={`mt-2 ${selectClassName}`}
           >
-            <option value="" disabled>
+            <option
+              value=""
+              disabled
+            >
               Select enquiry type
             </option>
 
@@ -208,7 +561,12 @@ export function ContactForm({
             </option>
           </select>
 
-          <FieldError message={errors.enquiryType?.message} />
+          <FieldError
+            message={
+              errors.enquiryType
+                ?.message
+            }
+          />
         </label>
       </div>
 
@@ -218,12 +576,19 @@ export function ContactForm({
         </span>
 
         <Input
-          {...register("subject")}
+          {...register(
+            "subject",
+          )}
           placeholder="What is your enquiry about?"
           className={`mt-2 ${inputClassName}`}
         />
 
-        <FieldError message={errors.subject?.message} />
+        <FieldError
+          message={
+            errors.subject
+              ?.message
+          }
+        />
       </label>
 
       <label className="mt-5 block">
@@ -232,11 +597,16 @@ export function ContactForm({
         </span>
 
         <select
-          {...register("preferredMethod")}
+          {...register(
+            "preferredMethod",
+          )}
           defaultValue=""
           className={`mt-2 ${selectClassName}`}
         >
-          <option value="" disabled>
+          <option
+            value=""
+            disabled
+          >
             Select contact method
           </option>
 
@@ -253,7 +623,12 @@ export function ContactForm({
           </option>
         </select>
 
-        <FieldError message={errors.preferredMethod?.message} />
+        <FieldError
+          message={
+            errors.preferredMethod
+              ?.message
+          }
+        />
       </label>
 
       <label className="mt-5 block">
@@ -262,13 +637,20 @@ export function ContactForm({
         </span>
 
         <Textarea
-          {...register("message")}
+          {...register(
+            "message",
+          )}
           rows={6}
           placeholder="Share the vehicle, service or assistance you require..."
           className="mt-2 min-h-36 resize-y border-white/10 bg-black/25 focus-visible:border-brand-gold/50 focus-visible:ring-brand-gold/20"
         />
 
-        <FieldError message={errors.message?.message} />
+        <FieldError
+          message={
+            errors.message
+              ?.message
+          }
+        />
       </label>
 
       <div className="mt-7 border border-brand-gold/20 bg-brand-gold/[0.04] p-4">
@@ -276,9 +658,15 @@ export function ContactForm({
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-brand-gold" />
 
           <p className="text-xs leading-6 text-muted-foreground">
-            This is currently a demonstration submission. Email,
-            WhatsApp, database and customer-management integrations will
-            be connected during the backend phase.
+            Your enquiry is securely
+            linked to your
+            authenticated Tavin
+            Motors account. Staff
+            notification and
+            conversation management
+            features will be expanded
+            during the following
+            backend milestones.
           </p>
         </div>
       </div>
@@ -286,18 +674,36 @@ export function ContactForm({
       <Button
         type="submit"
         size="lg"
-        disabled={isSubmitting}
+        disabled={
+          isSubmitting ||
+          sessionPending
+        }
         className="mt-7 h-12 w-full bg-primary shadow-[0_0_28px_rgb(164_32_42_/_20%)] hover:bg-primary/90"
       >
-        {isSubmitting ? (
+        {sessionPending ? (
           <>
             <LoaderCircle className="size-4 animate-spin" />
-            Sending Enquiry
+            Checking Account
+          </>
+        ) : isSubmitting ? (
+          <>
+            <LoaderCircle className="size-4 animate-spin" />
+
+            {session?.user
+              ? "Sending Enquiry"
+              : "Preparing Sign In"}
           </>
         ) : (
           <>
-            <Send className="size-4" />
-            Send Enquiry
+            {session?.user ? (
+              <Send className="size-4" />
+            ) : (
+              <LockKeyhole className="size-4" />
+            )}
+
+            {session?.user
+              ? "Send Enquiry"
+              : "Continue to Send Enquiry"}
           </>
         )}
       </Button>

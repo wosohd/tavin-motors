@@ -2,22 +2,52 @@
 
 import {
   type ChangeEvent,
+  useEffect,
+  useRef,
   useState,
 } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  useRouter,
+} from "next/navigation";
+
+import {
+  zodResolver,
+} from "@hookform/resolvers/zod";
+
 import {
   CheckCircle2,
   ImagePlus,
   LoaderCircle,
+  LockKeyhole,
   Send,
   X,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  useForm,
+} from "react-hook-form";
+
+import {
+  toast,
+} from "sonner";
+
+import {
+  Button,
+} from "@/components/ui/button";
+
+import {
+  Input,
+} from "@/components/ui/input";
+
+import {
+  Textarea,
+} from "@/components/ui/textarea";
+
+import {
+  authClient,
+} from "@/lib/auth-client";
+
 import {
   sellVehicleSchema,
   type SellVehicleValues,
@@ -27,13 +57,28 @@ type FieldErrorProps = {
   message?: string;
 };
 
+type MarketplaceListingSubmissionResponse = {
+  message?: string;
+
+  listing?: {
+    referenceCode: string | null;
+    slug: string;
+    status: string;
+  };
+};
+
 const inputClassName =
   "h-11 border-white/10 bg-black/25 focus-visible:border-brand-gold/50 focus-visible:ring-brand-gold/20";
 
 const selectClassName =
   "h-11 w-full border border-white/10 bg-black/25 px-3 text-sm text-foreground outline-none transition-colors focus:border-brand-gold/50 focus:ring-2 focus:ring-brand-gold/10";
 
-function FieldError({ message }: FieldErrorProps) {
+const sellVehicleDraftKey =
+  "tavin-marketplace-sell-draft";
+
+function FieldError({
+  message,
+}: FieldErrorProps) {
   if (!message) {
     return null;
   }
@@ -48,10 +93,60 @@ function FieldError({ message }: FieldErrorProps) {
   );
 }
 
+function getSellVehicleCallbackUrl() {
+  if (
+    typeof window ===
+    "undefined"
+  ) {
+    return "/marketplace/sell#sell-vehicle";
+  }
+
+  return (
+    window.location.pathname +
+    window.location.search +
+    "#sell-vehicle"
+  );
+}
+
 export function SellVehicleForm() {
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [imageError, setImageError] = useState("");
-  const [imageInputKey, setImageInputKey] = useState(0);
+  const router =
+    useRouter();
+
+  const {
+    data: session,
+    isPending: sessionPending,
+  } =
+    authClient.useSession();
+
+  const [
+    selectedImages,
+    setSelectedImages,
+  ] =
+    useState<File[]>([]);
+
+  const [
+    imageError,
+    setImageError,
+  ] =
+    useState("");
+
+  const [
+    imageInputKey,
+    setImageInputKey,
+  ] =
+    useState(0);
+
+  /*
+   * Prevent the saved draft from
+   * being restored more than once.
+   *
+   * This avoids overwriting edits
+   * if the authentication session
+   * finishes resolving while the
+   * customer is already typing.
+   */
+  const hasRestoredDraftRef =
+    useRef(false);
 
   const {
     register,
@@ -61,83 +156,173 @@ export function SellVehicleForm() {
       errors,
       isSubmitting,
     },
-  } = useForm<SellVehicleValues>({
-    resolver: zodResolver(sellVehicleSchema),
-    defaultValues: {
-      fullName: "",
-      phone: "",
-      email: "",
-      make: "",
-      model: "",
-      trim: "",
-      year: "",
-      price: "",
-      mileage: "",
-      transmission: "",
-      fuelType: "",
-      bodyType: "",
-      location: "",
-      condition: "",
-      ownership: "",
-      exteriorColor: "",
-      registration: "",
-      description: "",
-      negotiable: false,
-      acceptTerms: false,
-    },
-  });
+  } =
+    useForm<SellVehicleValues>({
+      resolver:
+        zodResolver(
+          sellVehicleSchema,
+        ),
 
-  function handleImagesChange(
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
-    const files = Array.from(
-      event.currentTarget.files ?? [],
-    );
+      defaultValues: {
+        fullName: "",
+        phone: "",
+        email: "",
+        make: "",
+        model: "",
+        trim: "",
+        year: "",
+        price: "",
+        mileage: "",
+        transmission: "",
+        fuelType: "",
+        bodyType: "",
+        location: "",
+        condition: "",
+        ownership: "",
+        exteriorColor: "",
+        registration: "",
+        description: "",
+        negotiable: false,
+        acceptTerms: false,
+      },
+    });
 
-    if (files.length > 8) {
-      setSelectedImages([]);
-      setImageError("Select a maximum of eight images.");
-      event.currentTarget.value = "";
+  /*
+   * Restore serialisable listing
+   * information after the customer
+   * returns from sign-up/sign-in.
+   *
+   * Browsers do not allow File
+   * objects to be restored into a
+   * file input, so photographs must
+   * be selected again.
+   */
+  useEffect(() => {
+    if (
+      typeof window ===
+        "undefined" ||
+      hasRestoredDraftRef.current
+    ) {
       return;
     }
 
-    const unsupportedFile = files.find(
-      (file) =>
-        ![
-          "image/jpeg",
-          "image/png",
-          "image/webp",
-        ].includes(file.type),
-    );
+    hasRestoredDraftRef.current =
+      true;
+
+    const storedDraft =
+      window.sessionStorage.getItem(
+        sellVehicleDraftKey,
+      );
+
+    if (!storedDraft) {
+      return;
+    }
+
+    try {
+      const draft =
+        JSON.parse(
+          storedDraft,
+        ) as SellVehicleValues;
+
+      reset(draft);
+    } catch {
+      window.sessionStorage.removeItem(
+        sellVehicleDraftKey,
+      );
+    }
+  }, [reset]);
+
+  function handleImagesChange(
+    event:
+      ChangeEvent<HTMLInputElement>,
+  ) {
+    const files =
+      Array.from(
+        event.currentTarget
+          .files ?? [],
+      );
+
+    if (
+      files.length >
+      8
+    ) {
+      setSelectedImages(
+        [],
+      );
+
+      setImageError(
+        "Select a maximum of eight images.",
+      );
+
+      event.currentTarget.value =
+        "";
+
+      return;
+    }
+
+    const unsupportedFile =
+      files.find(
+        (file) =>
+          ![
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+          ].includes(
+            file.type,
+          ),
+      );
 
     if (unsupportedFile) {
-      setSelectedImages([]);
+      setSelectedImages(
+        [],
+      );
+
       setImageError(
         "Only JPG, PNG and WebP images are supported.",
       );
-      event.currentTarget.value = "";
+
+      event.currentTarget.value =
+        "";
+
       return;
     }
 
-    const oversizedFile = files.find(
-      (file) => file.size > 5 * 1024 * 1024,
-    );
+    const oversizedFile =
+      files.find(
+        (file) =>
+          file.size >
+          5 *
+            1024 *
+            1024,
+      );
 
     if (oversizedFile) {
-      setSelectedImages([]);
+      setSelectedImages(
+        [],
+      );
+
       setImageError(
         "Each selected image must be smaller than 5 MB.",
       );
-      event.currentTarget.value = "";
+
+      event.currentTarget.value =
+        "";
+
       return;
     }
 
-    setSelectedImages(files);
+    setSelectedImages(
+      files,
+    );
 
-    if (files.length < 3) {
+    if (
+      files.length <
+      3
+    ) {
       setImageError(
         "Select at least three clear vehicle images.",
       );
+
       return;
     }
 
@@ -145,42 +330,278 @@ export function SellVehicleForm() {
   }
 
   function clearImages() {
-    setSelectedImages([]);
+    setSelectedImages(
+      [],
+    );
+
     setImageError("");
 
-    // Remount the uncontrolled file input to clear its selection.
-    setImageInputKey((currentKey) => currentKey + 1);
+    /*
+     * Remount the uncontrolled
+     * file input to clear its
+     * browser-managed selection.
+     */
+    setImageInputKey(
+      (
+        currentKey,
+      ) =>
+        currentKey +
+        1,
+    );
   }
 
-  async function onSubmit(values: SellVehicleValues) {
-    if (selectedImages.length < 3) {
-      setImageError(
-        "Select at least three clear vehicle images.",
+  async function onSubmit(
+    values:
+      SellVehicleValues,
+  ) {
+    /*
+     * Allow a guest to complete
+     * and validate the textual
+     * listing before authentication.
+     *
+     * Save the serialisable fields
+     * before checking photographs,
+     * because selected File objects
+     * cannot survive navigation.
+     */
+    if (
+      !session?.user
+    ) {
+      window.sessionStorage.setItem(
+        sellVehicleDraftKey,
+        JSON.stringify(
+          values,
+        ),
       );
+
+      const callbackUrl =
+        getSellVehicleCallbackUrl();
+
+      toast.info(
+        "Tavin account required",
+        {
+          description:
+            selectedImages.length >
+            0
+              ? "Your listing details have been preserved. Create an account or sign in to continue. You will need to reselect the photographs when you return."
+              : "Your listing details have been preserved. Create an account or sign in to continue.",
+        },
+      );
+
+      router.push(
+        `/sign-up?callbackUrl=${encodeURIComponent(
+          callbackUrl,
+        )}`,
+      );
+
       return;
     }
 
-    void values;
-    void selectedImages;
+    /*
+     * Photographs are required for
+     * a genuine marketplace
+     * submission.
+     */
+    if (
+      selectedImages.length <
+      3
+    ) {
+      setImageError(
+        "Select at least three clear vehicle images.",
+      );
 
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 900);
-    });
+      return;
+    }
 
-    toast.success("Vehicle listing submitted", {
-      description:
-        "The listing has entered the demonstration moderation queue and is not yet publicly visible.",
-    });
+    if (
+      selectedImages.length >
+      8
+    ) {
+      setImageError(
+        "Select a maximum of eight images.",
+      );
 
-    reset();
-    clearImages();
+      return;
+    }
+
+    setImageError("");
+
+    try {
+      /*
+       * Marketplace submissions
+       * contain both ordinary form
+       * fields and binary image
+       * files, so this request uses
+       * multipart FormData.
+       */
+      const formData =
+        new FormData();
+
+      Object.entries(
+        values,
+      ).forEach(
+        ([
+          key,
+          value,
+        ]) => {
+          formData.append(
+            key,
+            String(
+              value,
+            ),
+          );
+        },
+      );
+
+      selectedImages.forEach(
+        (file) => {
+          formData.append(
+            "images",
+            file,
+          );
+        },
+      );
+
+      /*
+       * Do not manually provide a
+       * Content-Type header here.
+       *
+       * The browser must create the
+       * multipart boundary.
+       */
+      const response =
+        await fetch(
+          "/api/marketplace-listings",
+          {
+            method:
+              "POST",
+
+            body:
+              formData,
+          },
+        );
+
+      const result =
+        (await response
+          .json()
+          .catch(
+            () =>
+              null,
+          )) as
+          | MarketplaceListingSubmissionResponse
+          | null;
+
+      /*
+       * The browser may have shown
+       * an authenticated session
+       * which expired before the
+       * request reached the server.
+       *
+       * The API's 401 is therefore
+       * authoritative.
+       */
+      if (
+        response.status ===
+        401
+      ) {
+        window.sessionStorage.setItem(
+          sellVehicleDraftKey,
+          JSON.stringify(
+            values,
+          ),
+        );
+
+        const callbackUrl =
+          getSellVehicleCallbackUrl();
+
+        toast.info(
+          "Please sign in again",
+          {
+            description:
+              "Your listing information has been preserved. You will need to reselect the photographs after signing in.",
+          },
+        );
+
+        router.push(
+          `/sign-in?callbackUrl=${encodeURIComponent(
+            callbackUrl,
+          )}`,
+        );
+
+        return;
+      }
+
+      if (
+        !response.ok
+      ) {
+        toast.error(
+          "Unable to submit listing",
+          {
+            description:
+              result?.message ??
+              "Please check the listing information and try again.",
+          },
+        );
+
+        return;
+      }
+
+      /*
+       * PostgreSQL has confirmed
+       * the listing and the API has
+       * confirmed the associated
+       * image records.
+       *
+       * It is now safe to remove
+       * the authentication draft.
+       */
+      window.sessionStorage.removeItem(
+        sellVehicleDraftKey,
+      );
+
+      const referenceCode =
+        result?.listing
+          ?.referenceCode;
+
+      toast.success(
+        "Vehicle listing submitted",
+        {
+          description:
+            referenceCode
+              ? `Reference ${referenceCode}. Your listing and photographs have been received and are awaiting Tavin Motors review.`
+              : "Your listing and photographs have been received and are awaiting Tavin Motors review.",
+        },
+      );
+
+      reset();
+
+      clearImages();
+    } catch {
+      /*
+       * Leave the form and selected
+       * photographs untouched when
+       * the network request fails.
+       */
+      toast.error(
+        "Unable to submit listing",
+        {
+          description:
+            "A connection error occurred. Your form has not been cleared, so you can try again.",
+        },
+      );
+    }
   }
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      id="sell-vehicle"
+      onSubmit={
+        handleSubmit(
+          onSubmit,
+        )
+      }
       noValidate
-      className="tm-panel p-5 sm:p-7 lg:p-8"
+      className="tm-panel scroll-mt-28 p-5 sm:p-7 lg:p-8"
     >
       <div className="border-b border-white/10 pb-6">
         <p className="tm-eyebrow">
@@ -188,15 +609,60 @@ export function SellVehicleForm() {
         </p>
 
         <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">
-          Submit your vehicle for review
+          Submit your vehicle
+          for review
         </h2>
 
         <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-          Complete the vehicle and seller information below. The
-          listing will remain pending until reviewed by the Tavin
-          Motors administration team.
+          Complete the vehicle
+          and seller information
+          below. The listing will
+          remain pending until
+          reviewed by the Tavin
+          Motors administration
+          team. An authenticated
+          Tavin account is required
+          before the vehicle can be
+          submitted.
         </p>
       </div>
+
+      {!sessionPending &&
+        !session?.user && (
+          <div className="mt-6 border border-brand-gold/25 bg-brand-gold/[0.05] p-4">
+            <div className="flex items-start gap-3">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-gold/10 text-brand-gold">
+                <LockKeyhole
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              </span>
+
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Account required
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Complete your
+                  vehicle details
+                  now. We will
+                  preserve the
+                  information while
+                  you create an
+                  account or sign
+                  in, then return
+                  you directly to
+                  this form. Vehicle
+                  photographs must
+                  be reselected
+                  after
+                  authentication.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
       <div className="mt-8">
         <p className="text-sm font-semibold">
@@ -210,13 +676,20 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("fullName")}
+              {...register(
+                "fullName",
+              )}
               placeholder="Your full name"
               autoComplete="name"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.fullName?.message} />
+            <FieldError
+              message={
+                errors.fullName
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -225,14 +698,21 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("phone")}
+              {...register(
+                "phone",
+              )}
               type="tel"
               placeholder="+254 7XX XXX XXX"
               autoComplete="tel"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.phone?.message} />
+            <FieldError
+              message={
+                errors.phone
+                  ?.message
+              }
+            />
           </label>
 
           <label className="sm:col-span-2">
@@ -245,14 +725,21 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("email")}
+              {...register(
+                "email",
+              )}
               type="email"
               placeholder="name@example.com"
               autoComplete="email"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.email?.message} />
+            <FieldError
+              message={
+                errors.email
+                  ?.message
+              }
+            />
           </label>
         </div>
       </div>
@@ -269,12 +756,19 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("make")}
+              {...register(
+                "make",
+              )}
               placeholder="Toyota"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.make?.message} />
+            <FieldError
+              message={
+                errors.make
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -283,12 +777,19 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("model")}
+              {...register(
+                "model",
+              )}
               placeholder="Harrier"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.model?.message} />
+            <FieldError
+              message={
+                errors.model
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -301,12 +802,19 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("trim")}
+              {...register(
+                "trim",
+              )}
               placeholder="Premium or specific variant"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.trim?.message} />
+            <FieldError
+              message={
+                errors.trim
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -315,47 +823,74 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("year")}
+              {...register(
+                "year",
+              )}
               type="number"
               min="1980"
-              max={new Date().getFullYear() + 1}
+              max={
+                new Date()
+                  .getFullYear() +
+                1
+              }
               placeholder="2020"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.year?.message} />
+            <FieldError
+              message={
+                errors.year
+                  ?.message
+              }
+            />
           </label>
 
           <label>
             <span className="text-sm font-medium">
-              Asking price in KES
+              Asking price in
+              KES
             </span>
 
             <Input
-              {...register("price")}
+              {...register(
+                "price",
+              )}
               type="number"
               min="1"
               placeholder="3500000"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.price?.message} />
+            <FieldError
+              message={
+                errors.price
+                  ?.message
+              }
+            />
           </label>
 
           <label>
             <span className="text-sm font-medium">
-              Mileage in kilometres
+              Mileage in
+              kilometres
             </span>
 
             <Input
-              {...register("mileage")}
+              {...register(
+                "mileage",
+              )}
               type="number"
               min="0"
               placeholder="65000"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.mileage?.message} />
+            <FieldError
+              message={
+                errors.mileage
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -364,11 +899,17 @@ export function SellVehicleForm() {
             </span>
 
             <select
-              {...register("transmission")}
+              {...register(
+                "transmission",
+              )}
               className={`mt-2 ${selectClassName}`}
             >
-              <option value="" disabled>
-                Select transmission
+              <option
+                value=""
+                disabled
+              >
+                Select
+                transmission
               </option>
 
               <option value="automatic">
@@ -381,7 +922,10 @@ export function SellVehicleForm() {
             </select>
 
             <FieldError
-              message={errors.transmission?.message}
+              message={
+                errors.transmission
+                  ?.message
+              }
             />
           </label>
 
@@ -391,11 +935,17 @@ export function SellVehicleForm() {
             </span>
 
             <select
-              {...register("fuelType")}
+              {...register(
+                "fuelType",
+              )}
               className={`mt-2 ${selectClassName}`}
             >
-              <option value="" disabled>
-                Select fuel type
+              <option
+                value=""
+                disabled
+              >
+                Select fuel
+                type
               </option>
 
               <option value="petrol">
@@ -415,7 +965,12 @@ export function SellVehicleForm() {
               </option>
             </select>
 
-            <FieldError message={errors.fuelType?.message} />
+            <FieldError
+              message={
+                errors.fuelType
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -424,11 +979,17 @@ export function SellVehicleForm() {
             </span>
 
             <select
-              {...register("bodyType")}
+              {...register(
+                "bodyType",
+              )}
               className={`mt-2 ${selectClassName}`}
             >
-              <option value="" disabled>
-                Select body type
+              <option
+                value=""
+                disabled
+              >
+                Select body
+                type
               </option>
 
               <option value="suv">
@@ -452,7 +1013,12 @@ export function SellVehicleForm() {
               </option>
             </select>
 
-            <FieldError message={errors.bodyType?.message} />
+            <FieldError
+              message={
+                errors.bodyType
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -461,12 +1027,19 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("location")}
+              {...register(
+                "location",
+              )}
               placeholder="Nairobi, Kenya"
               className={`mt-2 ${inputClassName}`}
             />
 
-            <FieldError message={errors.location?.message} />
+            <FieldError
+              message={
+                errors.location
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -475,11 +1048,17 @@ export function SellVehicleForm() {
             </span>
 
             <select
-              {...register("condition")}
+              {...register(
+                "condition",
+              )}
               className={`mt-2 ${selectClassName}`}
             >
-              <option value="" disabled>
-                Select condition
+              <option
+                value=""
+                disabled
+              >
+                Select
+                condition
               </option>
 
               <option value="locally-used">
@@ -495,7 +1074,12 @@ export function SellVehicleForm() {
               </option>
             </select>
 
-            <FieldError message={errors.condition?.message} />
+            <FieldError
+              message={
+                errors.condition
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -504,11 +1088,17 @@ export function SellVehicleForm() {
             </span>
 
             <select
-              {...register("ownership")}
+              {...register(
+                "ownership",
+              )}
               className={`mt-2 ${selectClassName}`}
             >
-              <option value="" disabled>
-                Select ownership
+              <option
+                value=""
+                disabled
+              >
+                Select
+                ownership
               </option>
 
               <option value="first-owner">
@@ -524,7 +1114,12 @@ export function SellVehicleForm() {
               </option>
             </select>
 
-            <FieldError message={errors.ownership?.message} />
+            <FieldError
+              message={
+                errors.ownership
+                  ?.message
+              }
+            />
           </label>
 
           <label>
@@ -533,19 +1128,25 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("exteriorColor")}
+              {...register(
+                "exteriorColor",
+              )}
               placeholder="Pearl White"
               className={`mt-2 ${inputClassName}`}
             />
 
             <FieldError
-              message={errors.exteriorColor?.message}
+              message={
+                errors.exteriorColor
+                  ?.message
+              }
             />
           </label>
 
           <label>
             <span className="text-sm font-medium">
-              Registration number
+              Registration
+              number
             </span>
 
             <span className="ml-2 text-xs text-muted-foreground">
@@ -553,13 +1154,18 @@ export function SellVehicleForm() {
             </span>
 
             <Input
-              {...register("registration")}
+              {...register(
+                "registration",
+              )}
               placeholder="KXX 000X"
               className={`mt-2 uppercase ${inputClassName}`}
             />
 
             <FieldError
-              message={errors.registration?.message}
+              message={
+                errors.registration
+                  ?.message
+              }
             />
           </label>
         </div>
@@ -570,29 +1176,41 @@ export function SellVehicleForm() {
           </span>
 
           <Textarea
-            {...register("description")}
+            {...register(
+              "description",
+            )}
             rows={7}
             placeholder="Describe the vehicle condition, ownership history, service history, upgrades and any known issues..."
             className="mt-2 min-h-40 resize-y border-white/10 bg-black/25 focus-visible:border-brand-gold/50 focus-visible:ring-brand-gold/20"
           />
 
-          <FieldError message={errors.description?.message} />
+          <FieldError
+            message={
+              errors.description
+                ?.message
+            }
+          />
         </label>
 
         <label className="mt-5 flex items-start gap-3 border border-white/10 bg-white/[0.025] p-4">
           <input
-            {...register("negotiable")}
+            {...register(
+              "negotiable",
+            )}
             type="checkbox"
             className="mt-1 size-4 accent-[var(--brand-red)]"
           />
 
           <span>
             <span className="block text-sm font-medium">
-              The asking price is negotiable
+              The asking price
+              is negotiable
             </span>
 
             <span className="mt-1 block text-xs leading-6 text-muted-foreground">
-              Buyers will see a negotiable-price indicator on the
+              Buyers will see a
+              negotiable-price
+              indicator on the
               public listing.
             </span>
           </span>
@@ -605,27 +1223,37 @@ export function SellVehicleForm() {
         </p>
 
         <p className="mt-2 text-xs leading-6 text-muted-foreground">
-          Select between three and eight JPG, PNG or WebP images.
-          Each image must be smaller than 5 MB.
+          Select between three
+          and eight JPG, PNG or
+          WebP images. Each image
+          must be smaller than
+          5 MB.
         </p>
 
         <label className="mt-5 flex cursor-pointer flex-col items-center justify-center border border-dashed border-white/20 bg-black/20 px-6 py-10 text-center transition-colors hover:border-brand-gold/40 hover:bg-brand-gold/[0.025]">
           <ImagePlus className="size-8 text-brand-gold" />
 
           <span className="mt-4 text-sm font-medium">
-            Select vehicle images
+            Select vehicle
+            images
           </span>
 
           <span className="mt-2 text-xs text-muted-foreground">
-            Exterior, interior, dashboard and engine-bay photos
+            Exterior, interior,
+            dashboard and
+            engine-bay photos
           </span>
 
           <input
-            key={imageInputKey}
+            key={
+              imageInputKey
+            }
             type="file"
             accept="image/jpeg,image/png,image/webp"
             multiple
-            onChange={handleImagesChange}
+            onChange={
+              handleImagesChange
+            }
             className="sr-only"
           />
         </label>
@@ -639,18 +1267,24 @@ export function SellVehicleForm() {
           </p>
         )}
 
-        {selectedImages.length > 0 && (
+        {selectedImages.length >
+          0 && (
           <div className="mt-4 border border-white/10 bg-white/[0.025] p-4">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">
-                {selectedImages.length} images selected
+                {
+                  selectedImages.length
+                }{" "}
+                images selected
               </p>
 
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={clearImages}
+                onClick={
+                  clearImages
+                }
                 className="text-muted-foreground"
               >
                 <X className="size-4" />
@@ -659,14 +1293,20 @@ export function SellVehicleForm() {
             </div>
 
             <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {selectedImages.map((file) => (
-                <li
-                  key={`${file.name}-${file.lastModified}`}
-                  className="truncate text-xs text-muted-foreground"
-                >
-                  {file.name}
-                </li>
-              ))}
+              {selectedImages.map(
+                (
+                  file,
+                ) => (
+                  <li
+                    key={`${file.name}-${file.lastModified}`}
+                    className="truncate text-xs text-muted-foreground"
+                  >
+                    {
+                      file.name
+                    }
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         )}
@@ -674,23 +1314,35 @@ export function SellVehicleForm() {
 
       <label className="mt-8 flex items-start gap-3 border border-brand-gold/20 bg-brand-gold/[0.04] p-4">
         <input
-          {...register("acceptTerms")}
+          {...register(
+            "acceptTerms",
+          )}
           type="checkbox"
           className="mt-1 size-4 accent-[var(--brand-red)]"
         />
 
         <span>
           <span className="block text-sm font-medium">
-            Confirm listing information
+            Confirm listing
+            information
           </span>
 
           <span className="mt-1 block text-xs leading-6 text-muted-foreground">
-            I confirm that I am authorised to advertise this vehicle,
-            the information is accurate and I accept the marketplace
-            review and publication rules.
+            I confirm that I am
+            authorised to advertise
+            this vehicle, the
+            information is accurate
+            and I accept the
+            marketplace review and
+            publication rules.
           </span>
 
-          <FieldError message={errors.acceptTerms?.message} />
+          <FieldError
+            message={
+              errors.acceptTerms
+                ?.message
+            }
+          />
         </span>
       </label>
 
@@ -698,28 +1350,53 @@ export function SellVehicleForm() {
         <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-brand-gold" />
 
         <p className="text-xs leading-6 text-muted-foreground">
-          This demonstration validates the listing locally. Images
-          are not uploaded or permanently stored. Database,
-          authentication, Cloudinary and admin moderation will be
-          connected during the backend phase.
+          Marketplace
+          submissions are securely
+          linked to your
+          authenticated Tavin
+          Motors account. Vehicle
+          photographs are stored
+          securely and the listing
+          remains pending until
+          reviewed by the Tavin
+          Motors administration
+          team.
         </p>
       </div>
 
       <Button
         type="submit"
         size="lg"
-        disabled={isSubmitting}
+        disabled={
+          isSubmitting ||
+          sessionPending
+        }
         className="mt-7 h-12 w-full bg-primary shadow-[0_0_28px_rgb(164_32_42_/_20%)] hover:bg-primary/90"
       >
-        {isSubmitting ? (
+        {sessionPending ? (
           <>
             <LoaderCircle className="size-4 animate-spin" />
-            Submitting Listing
+            Checking Account
+          </>
+        ) : isSubmitting ? (
+          <>
+            <LoaderCircle className="size-4 animate-spin" />
+
+            {session?.user
+              ? "Uploading Listing"
+              : "Preparing Sign In"}
           </>
         ) : (
           <>
-            <Send className="size-4" />
-            Submit Vehicle for Review
+            {session?.user ? (
+              <Send className="size-4" />
+            ) : (
+              <LockKeyhole className="size-4" />
+            )}
+
+            {session?.user
+              ? "Submit Vehicle for Review"
+              : "Continue to Submit Vehicle"}
           </>
         )}
       </Button>
