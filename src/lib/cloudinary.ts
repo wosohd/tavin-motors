@@ -39,6 +39,11 @@ function configureCloudinary() {
   configured = true;
 }
 
+
+/*
+ * Existing marketplace upload.
+ * Keep unchanged.
+ */
 export async function uploadMarketplaceImage({
   file,
   userId,
@@ -52,9 +57,7 @@ export async function uploadMarketplaceImage({
     await file.arrayBuffer();
 
   const buffer =
-    Buffer.from(
-      arrayBuffer,
-    );
+    Buffer.from(arrayBuffer);
 
   return new Promise<UploadApiResponse>(
     (
@@ -70,6 +73,7 @@ export async function uploadMarketplaceImage({
             folder:
               `tavin-motors/marketplace/${userId}`,
           },
+
           (
             error,
             result,
@@ -88,19 +92,90 @@ export async function uploadMarketplaceImage({
               return;
             }
 
-            resolve(
-              result,
-            );
+            resolve(result);
           },
         );
 
-      stream.end(
-        buffer,
-      );
+      stream.end(buffer);
     },
   );
 }
 
+
+/*
+ * New vehicle inventory upload.
+ *
+ * Stores vehicle images separately:
+ *
+ * tavin-motors/
+ *      vehicles/
+ *          vehicleId/
+ */
+export async function uploadVehicleImage({
+  file,
+  vehicleId,
+}: {
+  file: File;
+  vehicleId: string;
+}) {
+  configureCloudinary();
+
+  const arrayBuffer =
+    await file.arrayBuffer();
+
+  const buffer =
+    Buffer.from(arrayBuffer);
+
+  return new Promise<UploadApiResponse>(
+    (
+      resolve,
+      reject,
+    ) => {
+      const stream =
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type:
+              "image",
+
+            folder:
+              `tavin-motors/vehicles/${vehicleId}`,
+          },
+
+          (
+            error,
+            result,
+          ) => {
+            if (
+              error ||
+              !result
+            ) {
+              reject(
+                error ??
+                  new Error(
+                    "Vehicle image upload failed.",
+                  ),
+              );
+
+              return;
+            }
+
+            resolve(result);
+          },
+        );
+
+      stream.end(buffer);
+    },
+  );
+}
+
+
+/*
+ * Shared delete function.
+ *
+ * Used by:
+ * - Marketplace images
+ * - Vehicle images
+ */
 export async function deleteCloudinaryImage(
   publicId: string,
 ) {

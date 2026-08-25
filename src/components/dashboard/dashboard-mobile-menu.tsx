@@ -22,27 +22,41 @@ import type { DashboardRole } from "@/types/dashboard";
 
 type DashboardMobileMenuProps = {
   role: DashboardRole;
+  canAccessAdmin?: boolean;
 };
 
 export function DashboardMobileMenu({
   role,
+  canAccessAdmin = false,
 }: DashboardMobileMenuProps) {
   const [open, setOpen] = useState(false);
+
   const details = dashboardRoleDetails[role];
+
   const SwitchIcon = details.switchIcon;
 
+  const canSwitchDashboards =
+    role === "admin" || canAccessAdmin;
+
+  const switchLabel =
+    role === "admin"
+      ? "Customer Dashboard"
+      : "Admin Dashboard";
+
   return (
-    <div className="flex items-center justify-between border-b border-border bg-background/85 px-4 py-3 backdrop-blur-xl lg:hidden">
+    <div className="flex items-center justify-between border-b border-white/10 bg-black/35 px-4 py-3 backdrop-blur-xl lg:hidden">
       <BrandMark />
 
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet
+        open={open}
+        onOpenChange={setOpen}
+      >
         <SheetTrigger
           render={
             <Button
               variant="outline"
               size="icon-lg"
               aria-label="Open dashboard navigation"
-              className="border-border bg-card/70"
             />
           }
         >
@@ -51,10 +65,10 @@ export function DashboardMobileMenu({
 
         <SheetContent
           side="left"
-          className="flex w-[88%] flex-col border-r border-border bg-background p-0 sm:max-w-sm"
+          className="border-white/10 bg-[#0b0e12] p-0"
         >
-          <SheetHeader className="border-b border-border px-5 py-5 text-left">
-            <SheetTitle className="text-foreground">
+          <SheetHeader className="border-b border-white/10 px-5 py-5">
+            <SheetTitle>
               {details.label}
             </SheetTitle>
 
@@ -63,48 +77,52 @@ export function DashboardMobileMenu({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="border-b border-border px-4 py-4">
-            <p className="mb-3 text-xs font-semibold tracking-[0.15em] text-muted-foreground uppercase">
-              Appearance
-            </p>
-
-            <ThemeToggle variant="full" />
-          </div>
-
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5">
             <DashboardNavigation
               role={role}
-              onNavigate={() => setOpen(false)}
+              onNavigate={() =>
+                setOpen(false)
+              }
             />
 
-            <div className="mt-auto space-y-2 border-t border-border pt-5">
-              <Link
-                href={details.switchHref}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  buttonVariants({
-                    variant: "outline",
-                    size: "lg",
-                  }),
-                  "w-full justify-start border-border bg-card/60",
-                )}
-              >
-                <SwitchIcon aria-hidden="true" />
-                {details.switchLabel}
-              </Link>
+            <div className="mt-auto space-y-3 border-t border-white/10 pt-5">
+              <ThemeToggle variant="full" />
+
+              {canSwitchDashboards && (
+                <Link
+                  href={details.switchHref}
+                  onClick={() =>
+                    setOpen(false)
+                  }
+                  className={cn(
+                    buttonVariants({
+                      variant: "outline",
+                      size: "lg",
+                    }),
+                    "w-full justify-start",
+                  )}
+                >
+                  <SwitchIcon />
+
+                  {switchLabel}
+                </Link>
+              )}
 
               <Link
                 href="/"
-                onClick={() => setOpen(false)}
+                onClick={() =>
+                  setOpen(false)
+                }
                 className={cn(
                   buttonVariants({
                     variant: "ghost",
                     size: "lg",
                   }),
-                  "w-full justify-start text-muted-foreground hover:text-foreground",
+                  "w-full justify-start",
                 )}
               >
-                <ExternalLink aria-hidden="true" />
+                <ExternalLink />
+
                 Return to website
               </Link>
             </div>

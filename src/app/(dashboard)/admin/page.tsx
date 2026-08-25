@@ -1,497 +1,723 @@
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+
 import {
   ArrowRight,
-  CalendarDays,
   CarFront,
-  CheckCircle2,
-  Clock3,
   Inbox,
-  PackageSearch,
-  PanelsTopLeft,
   ShieldCheck,
   Ship,
   UsersRound,
-  Warehouse,
   Wrench,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  DashboardPageHeader,
+} from "@/components/dashboard/dashboard-page-header";
 
-type AdminStat = {
-  label: string;
-  value: string;
-  detail: string;
-  icon: LucideIcon;
-};
+import {
+  DashboardStatCard,
+} from "@/components/dashboard/dashboard-stat-card";
 
-type AdminOperation = {
-  title: string;
-  description: string;
-  href: string;
-  metric: string;
-  metricLabel: string;
-  icon: LucideIcon;
-};
+import {
+  Badge,
+} from "@/components/ui/badge";
 
-type AdminActivity = {
-  title: string;
-  description: string;
-  time: string;
-  status:
-    | "Pending"
-    | "Review"
-    | "Confirmed"
-    | "Published";
-};
+import {
+  buttonVariants,
+} from "@/components/ui/button";
 
-const adminStats: AdminStat[] = [
-  {
-    label: "Vehicles in stock",
-    value: "24",
-    detail: "6 featured inventory vehicles",
-    icon: Warehouse,
-  },
-  {
-    label: "Incoming vehicles",
-    value: "8",
-    detail: "3 expected within fourteen days",
-    icon: Ship,
-  },
-  {
-    label: "Pending listings",
-    value: "6",
-    detail: "Awaiting marketplace moderation",
-    icon: ShieldCheck,
-  },
-  {
-    label: "Open enquiries",
-    value: "13",
-    detail: "Across imports, service and contact",
-    icon: Inbox,
-  },
-];
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-const adminOperations: AdminOperation[] = [
-  {
-    title: "Inventory management",
-    description:
-      "Review vehicles currently available through Tavin Motors.",
-    href: "/admin/inventory",
-    metric: "24",
-    metricLabel: "vehicles",
-    icon: Warehouse,
-  },
-  {
-    title: "Incoming vehicles",
-    description:
-      "Track vehicles that are being sourced, shipped or cleared.",
-    href: "/admin/incoming",
-    metric: "8",
-    metricLabel: "in transit",
-    icon: Ship,
-  },
-  {
-    title: "Marketplace moderation",
-    description:
-      "Review customer listings before they appear publicly.",
-    href: "/admin/marketplace",
-    metric: "6",
-    metricLabel: "pending",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Import enquiries",
-    description:
-      "Manage personalised vehicle sourcing requests.",
-    href: "/admin/imports",
-    metric: "5",
-    metricLabel: "active",
-    icon: PackageSearch,
-  },
-  {
-    title: "Service bookings",
-    description:
-      "Coordinate diagnostics, repairs and maintenance bookings.",
-    href: "/admin/service-bookings",
-    metric: "7",
-    metricLabel: "scheduled",
-    icon: CalendarDays,
-  },
-  {
-    title: "Customer enquiries",
-    description:
-      "Respond to general website and vehicle enquiries.",
-    href: "/admin/enquiries",
-    metric: "8",
-    metricLabel: "unresolved",
-    icon: Inbox,
-  },
-  {
-    title: "User management",
-    description:
-      "Review customer and administrator demo accounts.",
-    href: "/admin/users",
-    metric: "42",
-    metricLabel: "users",
-    icon: UsersRound,
-  },
-  {
-    title: "Website content",
-    description:
-      "Manage homepage sections, notices and featured content.",
-    href: "/admin/content",
-    metric: "4",
-    metricLabel: "sections",
-    icon: PanelsTopLeft,
-  },
-];
+import {
+  prisma,
+} from "@/lib/prisma";
 
-const recentActivity: AdminActivity[] = [
-  {
-    title: "New import request",
-    description:
-      "Toyota Harrier 2021 sourcing request submitted.",
-    time: "12 minutes ago",
-    status: "Pending",
-  },
-  {
-    title: "Marketplace listing submitted",
-    description:
-      "Mazda CX-5 listing requires administrative review.",
-    time: "34 minutes ago",
-    status: "Review",
-  },
-  {
-    title: "Service booking confirmed",
-    description:
-      "Vehicle diagnostics booked for Thursday morning.",
-    time: "1 hour ago",
-    status: "Confirmed",
-  },
-  {
-    title: "Inventory vehicle published",
-    description:
-      "Mercedes-Benz C200 added to public inventory.",
-    time: "3 hours ago",
-    status: "Published",
-  },
-];
+import {
+  cn,
+} from "@/lib/utils";
 
-const statusStyles: Record<
-  AdminActivity["status"],
-  string
-> = {
-  Pending:
-    "border-brand-gold/35 bg-brand-gold/10 text-brand-gold",
-  Review:
-    "border-brand-burgundy/30 bg-brand-burgundy/10 text-brand-red dark:bg-brand-burgundy/30",
-  Confirmed:
-    "border-emerald-600/25 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400",
-  Published:
-    "border-sky-600/25 bg-sky-600/10 text-sky-700 dark:text-sky-400",
-};
+import type {
+  DashboardStat,
+} from "@/types/dashboard";
 
-export default function AdminDashboardPage() {
+export const dynamic =
+  "force-dynamic";
+
+function formatStatus(
+  value: string,
+) {
+  return value
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(
+      /\b\w/g,
+      (character) =>
+        character.toUpperCase(),
+    );
+}
+
+function formatDateTime(
+  value: Date,
+) {
+  return new Intl.DateTimeFormat(
+    "en-KE",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone:
+        "Africa/Nairobi",
+    },
+  ).format(value);
+}
+
+export default async function AdminDashboardPage() {
+  /*
+   * All dashboard figures below
+   * are now calculated directly
+   * from PostgreSQL.
+   */
+  const [
+    totalVehicles,
+    publishedVehicles,
+
+    pendingMarketplace,
+
+    activeImports,
+
+    openEnquiries,
+
+    activeServiceBookings,
+
+    totalUsers,
+
+    recentMarketplace,
+    recentImports,
+    recentBookings,
+    recentEnquiries,
+  ] =
+    await Promise.all([
+      prisma.vehicle.count(),
+
+      prisma.vehicle.count({
+        where: {
+          published: true,
+        },
+      }),
+
+      prisma.marketplaceListing.count({
+        where: {
+          status:
+            "PENDING_REVIEW",
+        },
+      }),
+
+      prisma.importRequest.count({
+        where: {
+          status: {
+            notIn: [
+              "DELIVERED",
+              "CANCELLED",
+            ],
+          },
+        },
+      }),
+
+      prisma.enquiry.count({
+        where: {
+          status: {
+            in: [
+              "NEW",
+              "IN_PROGRESS",
+            ],
+          },
+        },
+      }),
+
+      prisma.serviceBooking.count({
+        where: {
+          status: {
+            in: [
+              "PENDING",
+              "CONFIRMED",
+              "IN_PROGRESS",
+            ],
+          },
+        },
+      }),
+
+      prisma.user.count(),
+
+      prisma.marketplaceListing.findMany({
+        orderBy: {
+          createdAt:
+            "desc",
+        },
+
+        take: 5,
+
+        select: {
+          id: true,
+          referenceCode: true,
+          make: true,
+          model: true,
+          year: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+
+      prisma.importRequest.findMany({
+        orderBy: {
+          submittedAt:
+            "desc",
+        },
+
+        take: 5,
+
+        select: {
+          id: true,
+          referenceCode: true,
+          make: true,
+          model: true,
+          status: true,
+          submittedAt: true,
+        },
+      }),
+
+      prisma.serviceBooking.findMany({
+        orderBy: {
+          createdAt:
+            "desc",
+        },
+
+        take: 5,
+
+        select: {
+          id: true,
+          referenceCode: true,
+          serviceType: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+
+      prisma.enquiry.findMany({
+        orderBy: {
+          createdAt:
+            "desc",
+        },
+
+        take: 5,
+
+        select: {
+          id: true,
+          referenceCode: true,
+          subject: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+  const stats: DashboardStat[] =
+    [
+      {
+        label:
+          "Published inventory",
+
+        value:
+          publishedVehicles.toString(),
+
+        detail:
+          `${totalVehicles} total vehicle records`,
+      },
+
+      {
+        label:
+          "Moderation queue",
+
+        value:
+          pendingMarketplace.toString(),
+
+        detail:
+          "Marketplace listings awaiting review",
+      },
+
+      {
+        label:
+          "Active imports",
+
+        value:
+          activeImports.toString(),
+
+        detail:
+          "Import requests currently in progress",
+      },
+
+      {
+        label:
+          "Open enquiries",
+
+        value:
+          openEnquiries.toString(),
+
+        detail:
+          "Customer enquiries requiring attention",
+      },
+
+      {
+        label:
+          "Service workload",
+
+        value:
+          activeServiceBookings.toString(),
+
+        detail:
+          "Pending, confirmed or active bookings",
+      },
+
+      {
+        label:
+          "Registered users",
+
+        value:
+          totalUsers.toString(),
+
+        detail:
+          "Tavin Motors customer and staff accounts",
+      },
+    ];
+
+  const statIcons = [
+    CarFront,
+    ShieldCheck,
+    Ship,
+    Inbox,
+    Wrench,
+    UsersRound,
+  ] as const;
+
+  const operationalQueue = [
+    {
+      title:
+        "Marketplace moderation",
+
+      value:
+        pendingMarketplace,
+
+      description:
+        "Submitted vehicles awaiting administrative review.",
+
+      href:
+        "/admin/marketplace",
+    },
+
+    {
+      title:
+        "Import requests",
+
+      value:
+        activeImports,
+
+      description:
+        "Customer import cases still in progress.",
+
+      href:
+        "/admin/imports",
+    },
+
+    {
+      title:
+        "Service bookings",
+
+      value:
+        activeServiceBookings,
+
+      description:
+        "Bookings requiring scheduling or workshop action.",
+
+      href:
+        "/admin/service-bookings",
+    },
+
+    {
+      title:
+        "Customer enquiries",
+
+      value:
+        openEnquiries,
+
+      description:
+        "New or active customer conversations.",
+
+      href:
+        "/admin/enquiries",
+    },
+  ];
+
+  /*
+   * Combine activity from several
+   * business tables into one live
+   * operations feed.
+   */
+  const recentActivity = [
+    ...recentMarketplace.map(
+      (listing) => ({
+        id:
+          `marketplace-${listing.id}`,
+
+        title:
+          `${listing.year} ${listing.make} ${listing.model}`,
+
+        reference:
+          listing.referenceCode ??
+          "Marketplace listing",
+
+        status:
+          formatStatus(
+            listing.status,
+          ),
+
+        date:
+          listing.createdAt,
+
+        href:
+          "/admin/marketplace",
+
+        type:
+          "Marketplace",
+      }),
+    ),
+
+    ...recentImports.map(
+      (request) => {
+        const vehicle =
+          [
+            request.make,
+            request.model,
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+        return {
+          id:
+            `import-${request.id}`,
+
+          title:
+            vehicle ||
+            "Vehicle import request",
+
+          reference:
+            request.referenceCode,
+
+          status:
+            formatStatus(
+              request.status,
+            ),
+
+          date:
+            request.submittedAt,
+
+          href:
+            "/admin/imports",
+
+          type:
+            "Import",
+        };
+      },
+    ),
+
+    ...recentBookings.map(
+      (booking) => ({
+        id:
+          `service-${booking.id}`,
+
+        title:
+          booking.serviceType,
+
+        reference:
+          booking.referenceCode,
+
+        status:
+          formatStatus(
+            booking.status,
+          ),
+
+        date:
+          booking.createdAt,
+
+        href:
+          "/admin/service-bookings",
+
+        type:
+          "Service",
+      }),
+    ),
+
+    ...recentEnquiries.map(
+      (enquiry) => ({
+        id:
+          `enquiry-${enquiry.id}`,
+
+        title:
+          enquiry.subject,
+
+        reference:
+          enquiry.referenceCode,
+
+        status:
+          formatStatus(
+            enquiry.status,
+          ),
+
+        date:
+          enquiry.createdAt,
+
+        href:
+          "/admin/enquiries",
+
+        type:
+          "Enquiry",
+      }),
+    ),
+  ]
+    .sort(
+      (
+        first,
+        second,
+      ) =>
+        second.date.getTime() -
+        first.date.getTime(),
+    )
+    .slice(0, 8);
+
   return (
     <div className="space-y-8">
-      <header className="flex flex-col gap-5 border-b border-border pb-7 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="tm-eyebrow">
-              Administration
+      <DashboardPageHeader
+        eyebrow="Administrator dashboard"
+        title="Tavin Motors operations"
+        description="Monitor live inventory, marketplace submissions, imports, service demand, customer enquiries and platform accounts from one operational view."
+        actions={
+          <Link
+            href="/admin/marketplace"
+            className={
+              buttonVariants({
+                size: "lg",
+              })
+            }
+          >
+            Review marketplace
+
+            <ArrowRight className="size-4" />
+          </Link>
+        }
+      />
+
+      <div className="flex items-center gap-2 border border-emerald-500/20 bg-emerald-500/[0.05] px-4 py-3">
+        <span className="size-2 rounded-full bg-emerald-400" />
+
+        <p className="text-xs font-medium text-muted-foreground">
+          Live operational data
+          from PostgreSQL
+        </p>
+      </div>
+
+      <section
+        aria-label="Administrative overview"
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      >
+        {stats.map(
+          (
+            stat,
+            index,
+          ) => (
+            <DashboardStatCard
+              key={
+                stat.label
+              }
+              stat={
+                stat
+              }
+              icon={
+                statIcons[
+                  index
+                ]
+              }
+            />
+          ),
+        )}
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+          <CardHeader>
+            <CardTitle className="text-xl">
+              Operational queue
+            </CardTitle>
+
+            <CardDescription>
+              Current workloads requiring administrative attention.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-3">
+            {operationalQueue.map(
+              (
+                item,
+              ) => (
+                <Link
+                  key={
+                    item.href
+                  }
+                  href={
+                    item.href
+                  }
+                  className="group flex items-center justify-between gap-4 border border-white/10 bg-black/15 p-4 transition-colors hover:border-brand-gold/25 hover:bg-brand-gold/[0.025]"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl font-semibold">
+                        {
+                          item.value
+                        }
+                      </span>
+
+                      <p className="font-medium">
+                        {
+                          item.title
+                        }
+                      </p>
+                    </div>
+
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                      {
+                        item.description
+                      }
+                    </p>
+                  </div>
+
+                  <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-brand-gold" />
+                </Link>
+              ),
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border border-white/10 bg-white/[0.035] shadow-none">
+          <CardHeader>
+            <CardTitle className="text-xl">
+              Recent activity
+            </CardTitle>
+
+            <CardDescription>
+              Latest customer activity recorded across the Tavin Motors platform.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            {recentActivity.length >
+            0 ? (
+              <div className="divide-y divide-white/10">
+                {recentActivity.map(
+                  (
+                    activity,
+                  ) => (
+                    <Link
+                      key={
+                        activity.id
+                      }
+                      href={
+                        activity.href
+                      }
+                      className="group flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant="outline"
+                            className="border-brand-gold/25 text-brand-gold"
+                          >
+                            {
+                              activity.type
+                            }
+                          </Badge>
+
+                          <Badge
+                            variant="secondary"
+                          >
+                            {
+                              activity.status
+                            }
+                          </Badge>
+                        </div>
+
+                        <p className="mt-3 truncate text-sm font-semibold">
+                          {
+                            activity.title
+                          }
+                        </p>
+
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {
+                            activity.reference
+                          }
+                          {" · "}
+                          {formatDateTime(
+                            activity.date,
+                          )}
+                        </p>
+                      </div>
+
+                      <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-brand-gold" />
+                    </Link>
+                  ),
+                )}
+              </div>
+            ) : (
+              <div className="flex min-h-56 items-center justify-center border border-dashed border-white/10 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No operational activity has been recorded yet.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <Card className="border border-brand-gold/20 bg-brand-gold/[0.035] shadow-none">
+        <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold">
+              Administration is now connected to live platform data
             </p>
 
-            <Badge
-              variant="outline"
-              className="border-brand-gold/30 bg-brand-gold/10 text-brand-gold"
-            >
-              Phase 1 demo
-            </Badge>
+            <p className="mt-2 max-w-3xl text-xs leading-6 text-muted-foreground">
+              These totals are calculated directly from the same PostgreSQL records created by customer marketplace submissions, import requests, service bookings, enquiries, vehicle inventory and account registrations.
+            </p>
           </div>
-
-          <h1 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
-            Operations command centre
-          </h1>
-
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
-            Review inventory, customer activity,
-            marketplace submissions, import requests
-            and service operations from one unified
-            workspace.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            href="/admin/inventory"
-            className={cn(
-              buttonVariants({
-                variant: "outline",
-                size: "lg",
-              }),
-              "border-border bg-card/65",
-            )}
-          >
-            <CarFront aria-hidden="true" />
-            Review inventory
-          </Link>
 
           <Link
             href="/admin/marketplace"
             className={cn(
               buttonVariants({
-                size: "lg",
+                variant:
+                  "outline",
               }),
-              "bg-primary hover:bg-primary/90",
+              "shrink-0 border-brand-gold/25",
             )}
           >
-            <ShieldCheck aria-hidden="true" />
-            Moderate listings
+            Open operations
+
+            <ArrowRight className="size-4" />
           </Link>
-        </div>
-      </header>
-
-      <section
-        aria-labelledby="admin-overview-heading"
-        className="space-y-4"
-      >
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2
-              id="admin-overview-heading"
-              className="text-xl font-semibold tracking-[-0.025em]"
-            >
-              Business overview
-            </h2>
-
-            <p className="mt-1 text-sm text-muted-foreground">
-              Demonstration statistics for the
-              Phase 1 frontend.
-            </p>
-          </div>
-
-          <Badge
-            variant="outline"
-            className="hidden border-border bg-card/60 text-muted-foreground sm:inline-flex"
-          >
-            Demo information
-          </Badge>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-          {adminStats.map((stat) => {
-            const Icon = stat.icon;
-
-            return (
-              <article
-                key={stat.label}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card/75 p-5 backdrop-blur-xl transition-colors hover:border-brand-gold/30"
-              >
-                <div className="absolute top-0 right-0 size-28 translate-x-8 -translate-y-8 rounded-full bg-brand-burgundy/10 blur-2xl dark:bg-brand-burgundy/20" />
-
-                <div className="relative flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {stat.label}
-                    </p>
-
-                    <p className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-foreground">
-                      {stat.value}
-                    </p>
-
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                      {stat.detail}
-                    </p>
-                  </div>
-
-                  <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-brand-gold/20 bg-brand-gold/10 text-brand-gold">
-                    <Icon
-                      aria-hidden="true"
-                      className="size-5"
-                    />
-                  </span>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <div className="grid gap-6 2xl:grid-cols-[1.45fr_0.85fr]">
-        <section
-          aria-labelledby="operations-heading"
-          className="rounded-2xl border border-border bg-card/70 p-5 backdrop-blur-xl sm:p-6"
-        >
-          <div>
-            <h2
-              id="operations-heading"
-              className="text-xl font-semibold tracking-[-0.025em]"
-            >
-              Operations
-            </h2>
-
-            <p className="mt-1 text-sm text-muted-foreground">
-              Open an administrative workspace.
-            </p>
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-2">
-            {adminOperations.map((operation) => {
-              const Icon = operation.icon;
-
-              return (
-                <Link
-                  key={operation.href}
-                  href={operation.href}
-                  className="group flex min-h-40 flex-col justify-between rounded-xl border border-border bg-background/45 p-4 transition-all hover:-translate-y-0.5 hover:border-brand-gold/35 hover:bg-brand-gold/5"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="grid size-10 place-items-center rounded-lg border border-border bg-card text-brand-gold">
-                      <Icon
-                        aria-hidden="true"
-                        className="size-5"
-                      />
-                    </span>
-
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-brand-gold"
-                    />
-                  </div>
-
-                  <div className="mt-6">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="font-semibold">
-                        {operation.title}
-                      </h3>
-
-                      <span className="text-xs font-semibold text-brand-gold">
-                        {operation.metric}{" "}
-                        {operation.metricLabel}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                      {operation.description}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="activity-heading"
-          className="rounded-2xl border border-border bg-card/70 p-5 backdrop-blur-xl sm:p-6"
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2
-                id="activity-heading"
-                className="text-xl font-semibold tracking-[-0.025em]"
-              >
-                Recent activity
-              </h2>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                Latest demo operational updates.
-              </p>
-            </div>
-
-            <Clock3
-              aria-hidden="true"
-              className="size-5 text-brand-gold"
-            />
-          </div>
-
-          <div className="mt-6 divide-y divide-border">
-            {recentActivity.map((activity) => (
-              <article
-                key={`${activity.title}-${activity.time}`}
-                className="py-4 first:pt-0 last:pb-0"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-brand-burgundy/10 text-brand-gold dark:bg-brand-burgundy/30">
-                    <CheckCircle2
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <h3 className="text-sm font-semibold">
-                        {activity.title}
-                      </h3>
-
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-[0.62rem]",
-                          statusStyles[
-                            activity.status
-                          ],
-                        )}
-                      >
-                        {activity.status}
-                      </Badge>
-                    </div>
-
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      {activity.description}
-                    </p>
-
-                    <p className="mt-2 text-[0.68rem] tracking-[0.08em] text-muted-foreground uppercase">
-                      {activity.time}
-                    </p>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      <section className="relative overflow-hidden rounded-2xl border border-brand-gold/20 bg-brand-burgundy/10 p-6 dark:bg-brand-burgundy/20">
-        <div className="absolute top-1/2 right-0 size-64 -translate-y-1/2 translate-x-1/3 rounded-full bg-brand-burgundy/15 blur-3xl" />
-
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="tm-eyebrow">
-              Frontend demonstration
-            </p>
-
-            <h2 className="mt-3 text-xl font-semibold">
-              Phase 2 will connect real operations
-            </h2>
-
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-              Authentication, role permissions,
-              database records, uploads and persistent
-              administrative actions will be connected
-              during backend development.
-            </p>
-          </div>
-
-          <Link
-            href="/admin/content"
-            className={cn(
-              buttonVariants({
-                variant: "outline",
-                size: "lg",
-              }),
-              "shrink-0 border-brand-gold/30 bg-background/50 hover:bg-brand-gold/10",
-            )}
-          >
-            <Wrench aria-hidden="true" />
-            Review website content
-          </Link>
-        </div>
-      </section>
+        </CardContent>
+      </Card>
     </div>
   );
 }

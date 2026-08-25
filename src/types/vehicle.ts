@@ -12,30 +12,68 @@ export type VehicleTone =
   | "blue"
   | "green";
 
+export type VehicleImage = {
+  id: string;
+  url: string;
+  publicId: string | null;
+  isPrimary: boolean;
+  sortOrder: number;
+};
+
 export type Vehicle = {
   id: string;
+
+  images?: VehicleImage[];
+
   slug: string;
   make: string;
   model: string;
   trim: string;
+
   year: number;
   price: number;
   mileage: number;
-  transmission: "Automatic" | "Manual";
-  fuelType: "Petrol" | "Diesel" | "Hybrid" | "Electric";
-  bodyType: "SUV" | "Sedan" | "Hatchback" | "Pickup" | "Coupe";
+
+  transmission:
+    | "Automatic"
+    | "Manual";
+
+  fuelType:
+    | "Petrol"
+    | "Diesel"
+    | "Hybrid"
+    | "Electric";
+
+  bodyType:
+    | "SUV"
+    | "Sedan"
+    | "Hatchback"
+    | "Pickup"
+    | "Coupe";
+
   engine: string;
   drivetrain: string;
+
   exteriorColor: string;
   interiorColor: string;
+
   location: string;
+
   stockCode: string;
+
   status: VehicleStatus;
+
   featured: boolean;
+
   description: string;
+
   features: string[];
+
   tone: VehicleTone;
+
   eta?: string;
+
   importOrigin?: string;
+
   progress?: number;
 };
