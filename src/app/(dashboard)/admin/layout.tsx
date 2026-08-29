@@ -89,8 +89,14 @@ export default async function AdminDashboardLayout({
   }
 
   return (
-    <DashboardShell role="admin">
-      {children}
-    </DashboardShell>
+    <DashboardShell
+  role="admin"
+  user={{
+    name: session.user.name,
+    email: session.user.email,
+  }}
+>
+  {children}
+</DashboardShell>
   );
 }

@@ -210,8 +210,7 @@ export function VehicleBrowser({
           </p>
 
           <p className="mt-1 text-xs text-muted-foreground">
-            Demonstration inventory for the Tavin Motors client
-            preview.
+            Current Tavin Motors inventory.
           </p>
         </div>
       </div>

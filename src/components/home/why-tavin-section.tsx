@@ -53,7 +53,7 @@ const trustIndicators = [
   {
     value: "3+",
     label: "International sourcing markets",
-    description: "Demonstration import-market coverage",
+    description: "International import coverage",
   },
   {
     value: "6",
@@ -155,9 +155,8 @@ export function WhyTavinSection() {
                 <BadgeCheck className="mt-0.5 size-5 shrink-0 text-brand-gold" />
 
                 <p className="text-xs leading-6 text-muted-foreground">
-                  These indicators describe the current demonstration
-                  platform and do not represent historical company
-                  performance claims.
+                  These indicators describe the services and capabilities
+available through Tavin Motors.
                 </p>
               </div>
             </div>

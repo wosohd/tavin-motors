@@ -200,13 +200,9 @@ export function ImportRequestForm() {
       return;
     }
 
-    /*
-     * Temporary Phase 2 simulation.
-     *
-     * This will later be replaced
-     * by the real authenticated
-     * database/API submission.
-     */
+   /*
+ * Handles import request submission flow.
+ */
    try {
   const response =
     await fetch(

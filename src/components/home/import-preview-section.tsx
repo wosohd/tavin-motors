@@ -298,7 +298,7 @@ export async function ImportPreviewSection() {
 
                     <p className="text-[0.65rem] tracking-[0.16em] text-muted-foreground uppercase">
 
-                      Demonstration landed price
+                      Estimated landed price
 
                     </p>
 

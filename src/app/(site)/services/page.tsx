@@ -47,12 +47,12 @@ const commonQuestions = [
   {
     question: "Can I book a service for a vehicle not bought from Tavin Motors?",
     answer:
-      "The final business policy will be confirmed by the client. The demonstration currently allows any customer to request a service.",
+      "Customers can request vehicle service appointments through the Tavin Motors platform. Final pricing and service recommendations are confirmed after vehicle assessment.",
   },
   {
     question: "Are service prices displayed online?",
     answer:
-      "Prices are not included in the current demo because the final service scope and pricing structure have not yet been approved.",
+      "Service pricing depends on the selected service, vehicle condition and required work. A final quotation is provided after assessment.",
   },
 ];
 
@@ -104,8 +104,8 @@ export default function ServicesPage() {
 
           <p className="mt-4 text-sm leading-7 text-muted-foreground">
             The final services and pricing will be confirmed with the
-            client. These categories demonstrate how the complete
-            auto-care experience will appear.
+            client.These categories represent the main vehicle care services offered
+through Tavin Motors.
           </p>
         </div>
 

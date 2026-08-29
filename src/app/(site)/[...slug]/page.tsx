@@ -710,20 +710,16 @@ export default async function MarketplaceListingPage({
 
             <div className="mt-7 border border-brand-gold/20 bg-brand-gold/[0.04] p-5">
 
-              <p className="text-sm font-semibold">
-                Important buyer notice
-              </p>
+             <p className="text-sm font-semibold">
+  Important buyer notice
+</p>
 
-
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">
-
-                Marketplace listings are provided by independent
-                sellers. Tavin Motors moderates listings before
-                publication, but buyers should independently inspect
-                the vehicle and verify ownership and documentation
-                before payment.
-
-              </p>
+<p className="mt-2 text-xs leading-6 text-muted-foreground">
+  Marketplace listings are provided by independent sellers.
+  Tavin Motors reviews listings before publication, but buyers
+  should inspect vehicles, verify ownership documents and complete
+  appropriate checks before purchase.
+</p>
 
             </div>
 

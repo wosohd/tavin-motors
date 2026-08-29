@@ -71,10 +71,14 @@ export default async function CustomerDashboardLayout({
 
   return (
     <DashboardShell
-      role="customer"
-      canAccessAdmin={canAccessAdmin}
-    >
-      {children}
-    </DashboardShell>
+  role="customer"
+  canAccessAdmin={canAccessAdmin}
+  user={{
+    name: session.user.name,
+    email: session.user.email,
+  }}
+>
+  {children}
+</DashboardShell>
   );
 }

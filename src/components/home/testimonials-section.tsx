@@ -1,103 +1,90 @@
 import {
   BadgeCheck,
-  Quote,
-  Star,
+  MessageSquareQuote,
 } from "lucide-react";
 
-import { HomeSectionHeading } from "@/components/home/home-section-heading";
+import {
+  HomeSectionHeading,
+} from "@/components/home/home-section-heading";
 
-const testimonials = [
-  {
-    label: "Demonstration customer 01",
-    service: "Assisted vehicle import",
-    quote:
-      "The proposed process made it easy to understand how sourcing, inspection, shipping and delivery would be handled from one place.",
-  },
-  {
-    label: "Demonstration customer 02",
-    service: "Vehicle marketplace",
-    quote:
-      "The structured listing information and moderation approach created a clearer way to compare vehicles offered by local sellers.",
-  },
-  {
-    label: "Demonstration customer 03",
-    service: "Auto-care services",
-    quote:
-      "The booking flow was straightforward and made it easy to communicate the vehicle concern before requesting an appointment.",
-  },
-];
 
 export function TestimonialsSection() {
+
   return (
+
     <section
       id="testimonials"
-      className="relative overflow-hidden border-b border-white/10"
+      className="relative border-b border-white/10"
     >
-      <div className="absolute right-0 bottom-0 size-[28rem] rounded-full bg-brand-gold/5 blur-[140px]" />
 
-      <div className="tm-container relative py-16 sm:py-20 lg:py-24">
+      <div className="tm-container py-16 sm:py-20 lg:py-24">
+
+
         <HomeSectionHeading
-          eyebrow="Customer Experience Preview"
-          title="How the Tavin Motors experience should feel."
-          description="These sample testimonials demonstrate the intended review layout. They must be replaced by verified customer feedback before production launch."
-          centered
+
+          eyebrow="Customer experiences"
+
+          title="Trusted service built around every vehicle journey."
+
+          description="Verified customer experiences will appear here after launch as Tavin Motors builds its customer review community."
+
         />
 
-        <div className="mx-auto mt-8 flex w-fit items-center gap-2 border border-brand-gold/25 bg-brand-gold/[0.045] px-4 py-2">
-          <BadgeCheck className="size-4 text-brand-gold" />
 
-          <span className="text-xs text-muted-foreground">
-            Demonstration content — not genuine customer reviews
+
+        <div className="mt-10 border border-dashed border-white/15 bg-white/[0.025] px-6 py-16 text-center sm:px-10">
+
+
+          <span className="mx-auto grid size-14 place-items-center rounded-full border border-brand-gold/25 bg-brand-gold/10 text-brand-gold">
+
+            <MessageSquareQuote
+              className="size-6"
+              aria-hidden="true"
+            />
+
           </span>
+
+
+
+          <h2 className="mt-6 text-xl font-semibold text-foreground">
+
+            Customer reviews coming soon
+
+          </h2>
+
+
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
+
+            We are preparing verified customer feedback from
+            completed vehicle purchases, imports and auto-care
+            experiences. Genuine customer stories will be shared
+            here after launch.
+
+          </p>
+
+
+
+          <div className="mx-auto mt-6 inline-flex items-center gap-2 border border-emerald-600/20 bg-emerald-500/10 px-4 py-2 text-xs text-emerald-700 dark:text-emerald-300">
+
+            <BadgeCheck
+              className="size-4"
+              aria-hidden="true"
+            />
+
+            Verified reviews only
+
+          </div>
+
+
         </div>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
-          {testimonials.map((testimonial, index) => (
-            <article
-              key={testimonial.label}
-              className="relative flex h-full flex-col overflow-hidden border border-white/10 bg-card/65 p-6 transition-colors hover:border-brand-gold/30"
-            >
-              <Quote className="size-8 text-brand-gold/70" />
 
-              <div
-                aria-label="Demonstration five-star rating"
-                className="mt-7 flex items-center gap-1"
-              >
-                {Array.from({ length: 5 }).map((_, starIndex) => (
-                  <Star
-                    key={`${testimonial.label}-${starIndex}`}
-                    className="size-3.5 fill-brand-gold text-brand-gold"
-                  />
-                ))}
-              </div>
-
-              <blockquote className="mt-6 flex-1 text-base leading-8 text-muted-foreground">
-                “{testimonial.quote}”
-              </blockquote>
-
-              <div className="mt-8 border-t border-white/10 pt-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {testimonial.label}
-                    </p>
-
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {testimonial.service}
-                    </p>
-                  </div>
-
-                  <span className="text-xs text-brand-gold">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="absolute top-0 right-0 h-px w-24 bg-gradient-to-l from-brand-gold/70 to-transparent" />
-            </article>
-          ))}
-        </div>
       </div>
+
+
     </section>
+
   );
+
 }

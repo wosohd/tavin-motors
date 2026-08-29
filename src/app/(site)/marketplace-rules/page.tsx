@@ -95,11 +95,8 @@ export default function MarketplaceRulesPage() {
           </h2>
 
           <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            These rules are demonstration content and are not yet a
-            final legal policy. The production marketplace will require
-            approved terms, privacy provisions, seller obligations,
-            prohibited-listing rules, complaint procedures and
-            limitation-of-liability wording.
+            These marketplace guidelines explain how listings are reviewed,
+published and managed on the Tavin Motors platform.
           </p>
         </div>
       </section>

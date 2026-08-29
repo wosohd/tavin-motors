@@ -119,7 +119,6 @@ export const dashboardRoleDetails: Record<
   DashboardRole,
   {
     label: string;
-    accountName: string;
     accountDetail: string;
     accountIcon: LucideIcon;
     navigation: DashboardNavigationItem[];
@@ -130,7 +129,6 @@ export const dashboardRoleDetails: Record<
 > = {
   customer: {
     label: "Customer portal",
-    accountName: "Joseph Otachi",
     accountDetail: "Customer account",
     accountIcon: CircleUserRound,
     navigation: customerDashboardNavigation,
@@ -138,9 +136,9 @@ export const dashboardRoleDetails: Record<
     switchLabel: "Admin dashboard",
     switchIcon: ClipboardCheck,
   },
+
   admin: {
     label: "Administration",
-    accountName: "Sir Clevin",
     accountDetail: "Administrator account",
     accountIcon: ShieldCheck,
     navigation: adminDashboardNavigation,
